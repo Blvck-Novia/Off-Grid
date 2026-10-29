@@ -26,7 +26,7 @@
 <div class="scanline"></div>
 <header>
   <div class="brand-block">
-    <div class="brand"><span class="dot"></span><h1>OFF GRID</h1></div>
+    <a class="brand" href="index.html" title="Back to home"><span class="dot"></span><h1>OFF GRID</h1></a>
     <div class="tagline">Latest uploads from your favourite creators</div>
   </div>
   <div class="actions">
@@ -78,7 +78,7 @@
 
 <script>
   // Replace this with your own Formspree endpoint — see the setup note at the top of this file.
-  const FORMSPREE_ENDPOINT = "https://formspree.io/f/mdeednlo";
+  const FORMSPREE_ENDPOINT = "REPLACE_ME";
 
   const form = document.getElementById('feedbackForm');
   const submitBtn = document.getElementById('fbSubmitBtn');
@@ -110,10 +110,20 @@
         form.reset();
         successBox.classList.add('show');
       } else {
-        throw new Error('Submission failed');
+        let detail = '';
+        try{
+          const data = await res.json();
+          if(data && data.errors) detail = data.errors.map(e => e.message).join(', ');
+        }catch(_){ /* response wasn't JSON */ }
+        throw new Error(detail || ('the form service replied with status ' + res.status));
       }
     }catch(err){
-      errorBox.textContent = "Something went wrong sending that — please try again in a moment.";
+      if(err instanceof TypeError){
+        // fetch itself failed: no response at all (offline, blocked by an extension, bad URL)
+        errorBox.textContent = "Couldn't reach the feedback service. An ad blocker or privacy extension may be blocking it, or the form address may be mistyped.";
+      } else {
+        errorBox.textContent = "Something went wrong sending that: " + err.message;
+      }
       errorBox.style.display = 'block';
     }finally{
       submitBtn.disabled = false;

@@ -396,3 +396,7 @@
   padding:16px 18px; color:#7ee08a; font-size:14px; margin-top:16px;
 }
 .feedback-success.show{ display:block; }
+
+/* Brand title doubles as a link back to the home page */
+a.brand{ text-decoration:none; color:inherit; cursor:pointer; }
+a.brand:hover h1{ color: var(--amber); }
