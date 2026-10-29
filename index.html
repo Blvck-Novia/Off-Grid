@@ -27,8 +27,8 @@
 
 <main>
   <form class="add-bar" id="addForm">
-    <input id="channelInput" type="text" placeholder="Add a creator — paste a channel URL, @handle, or channel ID" autocomplete="off">
-    <input id="genreInput" list="genreList" type="text" placeholder="Genre (leave blank to auto-detect)" autocomplete="off">
+    <input id="channelInput" type="text" placeholder="Add a creator — paste a channel URL, @handle, or channel ID" title="Add a creator — paste a channel URL, @handle, or channel ID" autocomplete="off">
+    <input id="genreInput" list="genreList" type="text" placeholder="Genre (leave blank to auto-detect)" title="Genre (leave blank to auto-detect)" autocomplete="off">
     <datalist id="genreList">
       <option value="Gaming"><option value="Music"><option value="Tech"><option value="Education">
       <option value="Comedy"><option value="Cooking"><option value="Vlogs"><option value="Sports">
@@ -97,7 +97,8 @@
       <li>Your creators, genres, and key are all saved in this browser, so they'll be here next time.</li>
       <li>Opened this file directly (double-clicked it)? Videos will open on YouTube in a new tab instead of the pop-up player — YouTube blocks its embedded player from pages loaded that way.</li>
     </ol>
-    <button type="button" class="btn-primary" id="infoTakeMeThereBtn">Take me to the API key box</button>
+    <button type="button" class="btn-primary" id="infoTourBtn">Take the guided tour</button>
+    <button type="button" id="infoTakeMeThereBtn">Take me to the API key box</button>
     <button type="button" id="infoCloseBtn">Close</button>
   </div>
 </div>
@@ -125,6 +126,20 @@
       <iframe id="videoModalIframe" src="" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
     </div>
     <a id="videoModalFallbackLink" class="video-modal-fallback" href="#" target="_blank" rel="noopener">Not playing? Watch on YouTube instead ↗</a>
+  </div>
+</div>
+
+<div id="tourBlocker"></div>
+<div id="tourSpot"></div>
+<div id="tourBubble" role="dialog" aria-live="polite">
+  <div class="tour-arrow" id="tourArrow"></div>
+  <div class="tour-title" id="tourTitle"></div>
+  <div class="tour-text" id="tourText"></div>
+  <div class="tour-footer">
+    <span class="tour-count" id="tourCount"></span>
+    <button type="button" class="tour-skip" id="tourSkipBtn">Skip</button>
+    <button type="button" id="tourBackBtn">Back</button>
+    <button type="button" class="btn-primary" id="tourNextBtn">Next</button>
   </div>
 </div>
 
@@ -878,10 +893,21 @@ function renderVideos(){
   const list = videos.filter(v => matchesSelection(v));
   videosCount.textContent = list.length;
   if(channels.length === 0){
-    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
-      <div class="big">No creators yet</div>
-      <div>Add a channel above to start your feed.</div>
+    grid.innerHTML = `<div class="welcome-panel">
+      <div class="welcome-kicker">Welcome to Off Grid</div>
+      <h2>Your feed, on your terms</h2>
+      <p>Off Grid is for people who would rather curate their own viewing than be at the mercy of the algorithm.
+      Add the creators you already know and subscribe to, and see their latest uploads in the order they were posted.</p>
+      <ul class="welcome-points">
+        <li>Decide what you want to watch, and when. No recommendations, no autoplay, no rabbit holes.</li>
+        <li>Sort your creators into genres, so you can pick what suits your mood.</li>
+        <li>Everything stays in your own browser. No account, no tracking.</li>
+      </ul>
+      <button type="button" class="btn-primary" id="welcomeStartBtn">Get started</button>
+      <div class="welcome-hint">A quick guided tour, about a minute.</div>
     </div>`;
+    const welcomeStartBtn = document.getElementById('welcomeStartBtn');
+    if(welcomeStartBtn) welcomeStartBtn.onclick = startTour;
     return;
   }
   if(videos.length === 0){
@@ -1149,6 +1175,168 @@ apiKeySaveBtn.addEventListener('click', async () => {
   }finally{
     apiKeySaveBtn.disabled = false;
   }
+});
+
+
+// ---------- Guided tour ----------
+const TOUR_STEPS = [
+  { target:'#apiKeyBar', placement:'top', title:'Step 1: get your free API key',
+    text:'This page fetches videos straight from YouTube using your own free key. Paste it here and press Save key. It stays in your browser and nobody else can see it.' },
+  { target:'#apiKeyHelpBtn', placement:'top', title:'Never made a key before?',
+    text:'Press Help for a step-by-step walkthrough. It takes a few minutes and costs nothing.' },
+  { target:'#channelInput', placement:'bottom', title:'Step 2: add a creator',
+    text:'Paste a channel\u2019s URL, their @handle or the channel ID, then press Add creator. Start with channels you already subscribe to.' },
+  { target:'#genreInput', placement:'bottom', title:'Optional: choose a genre',
+    text:'Tag each creator (Gaming, Music, Tech and so on) so you can watch by mood. Leave it blank and Off Grid will suggest one from YouTube\u2019s own category data.' },
+  { target:'.creators-panel', placement:'right', title:'Your creators',
+    text:'Everyone you add appears here, grouped by genre. Click a name, or a genre, to see only their videos. \u270E edits a genre, \u2715 removes someone, and Undo brings them back.' },
+  { target:'#genreFilterBtn', placement:'bottom', title:'Filter by genre',
+    text:'Use Filter to hide whole genres in one go, handy when you only fancy a certain kind of video.' },
+  { target:'.feed-col', placement:'inside', title:'Your feed',
+    text:'The latest videos from your creators, newest first. Click one to watch it in a pop-up. Anything you have watched is marked \u201CJust watched\u201D, so you can keep track.' },
+  { target:'.shorts-rail', placement:'left', title:'Shorts, kept separate',
+    text:'Short-form videos get their own rail, so scrolling through them is a choice rather than the default.' },
+  { target:'#dataBar', placement:'top', title:'Back up or move your list',
+    text:'Export saves your creators and genres to a file, and Import loads them on another device. Your API key isn\u2019t included, so enter it separately on each device.' },
+  { target:null, title:'You\u2019re all set!',
+    text:'Add your first creator and enjoy a feed that is entirely your own. You can replay this tour any time from the Info button.' }
+];
+
+const tourBlocker = document.getElementById('tourBlocker');
+const tourSpot = document.getElementById('tourSpot');
+const tourBubble = document.getElementById('tourBubble');
+const tourArrow = document.getElementById('tourArrow');
+const tourTitle = document.getElementById('tourTitle');
+const tourText = document.getElementById('tourText');
+const tourCount = document.getElementById('tourCount');
+const tourSkipBtn = document.getElementById('tourSkipBtn');
+const tourBackBtn = document.getElementById('tourBackBtn');
+const tourNextBtn = document.getElementById('tourNextBtn');
+let tourActive = false;
+let tourIndex = 0;
+
+function startTour(){
+  tourActive = true;
+  tourIndex = 0;
+  tourBlocker.classList.add('active');
+  showTourStep();
+}
+
+function endTour(){
+  tourActive = false;
+  tourBlocker.classList.remove('active');
+  tourBlocker.style.background = '';
+  tourSpot.style.display = 'none';
+  tourBubble.style.display = 'none';
+  window.scrollTo({ top: 0 });
+}
+
+function showTourStep(){
+  const step = TOUR_STEPS[tourIndex];
+  tourTitle.textContent = step.title;
+  tourText.textContent = step.text;
+  tourCount.textContent = `${tourIndex + 1} / ${TOUR_STEPS.length}`;
+  tourBackBtn.style.visibility = tourIndex === 0 ? 'hidden' : 'visible';
+  tourNextBtn.textContent = tourIndex === TOUR_STEPS.length - 1 ? 'Done' : 'Next';
+  tourBubble.style.display = 'block';
+  tourBubble.style.visibility = 'hidden';
+  const el = step.target ? document.querySelector(step.target) : null;
+  if(el && el.scrollIntoView) el.scrollIntoView({ block: 'center', inline: 'nearest' });
+  requestAnimationFrame(positionTour);
+}
+
+function positionTour(){
+  if(!tourActive) return;
+  const step = TOUR_STEPS[tourIndex];
+  const el = step.target ? document.querySelector(step.target) : null;
+  const vw = window.innerWidth, vh = window.innerHeight, m = 12, gap = 16;
+  const bw = tourBubble.offsetWidth, bh = tourBubble.offsetHeight;
+  let x, y, side = 'none', rect = null;
+
+  tourArrow.className = 'tour-arrow';
+  tourArrow.style.display = 'none';
+
+  if(!el){
+    // Final step: no target, so dim the whole page and centre the bubble
+    tourSpot.style.display = 'none';
+    tourBlocker.style.background = 'rgba(5,8,12,0.8)';
+    x = (vw - bw) / 2;
+    y = (vh - bh) / 2;
+  } else {
+    tourBlocker.style.background = 'transparent';
+    const r = el.getBoundingClientRect();
+    const pad = 6;
+    rect = { left: r.left - pad, top: r.top - pad, width: r.width + pad * 2, height: r.height + pad * 2 };
+    rect.right = rect.left + rect.width;
+    rect.bottom = rect.top + rect.height;
+    tourSpot.style.display = 'block';
+    tourSpot.style.left = rect.left + 'px';
+    tourSpot.style.top = rect.top + 'px';
+    tourSpot.style.width = rect.width + 'px';
+    tourSpot.style.height = rect.height + 'px';
+
+    const fits = {
+      top:    rect.top >= bh + gap + m,
+      bottom: vh - rect.bottom >= bh + gap + m,
+      left:   rect.left >= bw + gap + m,
+      right:  vw - rect.right >= bw + gap + m
+    };
+    const pref = step.placement || 'bottom';
+    const order = pref === 'inside' ? [] : [pref, 'bottom', 'top', 'right', 'left'];
+    side = order.find(s => fits[s]) || 'inside';
+
+    if(side === 'bottom'){ y = rect.bottom + gap; x = rect.left + rect.width / 2 - bw / 2; }
+    else if(side === 'top'){ y = rect.top - gap - bh; x = rect.left + rect.width / 2 - bw / 2; }
+    else if(side === 'right'){ x = rect.right + gap; y = rect.top + rect.height / 2 - bh / 2; }
+    else if(side === 'left'){ x = rect.left - gap - bw; y = rect.top + rect.height / 2 - bh / 2; }
+    else { x = rect.left + rect.width / 2 - bw / 2; y = Math.max(rect.top, m) + 70; } // inside a large target
+  }
+
+  x = Math.min(Math.max(x, m), Math.max(m, vw - bw - m));
+  y = Math.min(Math.max(y, m), Math.max(m, vh - bh - m));
+  tourBubble.style.left = x + 'px';
+  tourBubble.style.top = y + 'px';
+  tourBubble.style.visibility = 'visible';
+
+  // Point the arrow at the target
+  if(rect && side !== 'inside' && side !== 'none'){
+    if(side === 'bottom' || side === 'top'){
+      const ax = Math.min(Math.max(rect.left + rect.width / 2 - x - 7, 16), bw - 30);
+      tourArrow.style.left = ax + 'px';
+      tourArrow.style.top = '';
+      tourArrow.className = 'tour-arrow ' + (side === 'bottom' ? 'up' : 'down');
+    } else {
+      const ay = Math.min(Math.max(rect.top + rect.height / 2 - y - 7, 16), bh - 30);
+      tourArrow.style.top = ay + 'px';
+      tourArrow.style.left = '';
+      tourArrow.className = 'tour-arrow ' + (side === 'right' ? 'left' : 'right');
+    }
+    tourArrow.style.display = 'block';
+  }
+}
+
+tourNextBtn.addEventListener('click', () => {
+  if(tourIndex >= TOUR_STEPS.length - 1){ endTour(); return; }
+  tourIndex++;
+  showTourStep();
+});
+tourBackBtn.addEventListener('click', () => {
+  if(tourIndex > 0){ tourIndex--; showTourStep(); }
+});
+tourSkipBtn.addEventListener('click', endTour);
+window.addEventListener('resize', positionTour);
+window.addEventListener('scroll', positionTour, true);
+document.addEventListener('keydown', (e) => {
+  if(!tourActive) return;
+  if(e.key === 'Escape') endTour();
+  else if(e.key === 'ArrowRight'){ e.preventDefault(); tourNextBtn.click(); }
+  else if(e.key === 'ArrowLeft') tourBackBtn.click();
+});
+
+const infoTourBtn = document.getElementById('infoTourBtn');
+infoTourBtn.addEventListener('click', () => {
+  infoModalOverlay.classList.remove('open');
+  startTour();
 });
 
 (async function init(){
