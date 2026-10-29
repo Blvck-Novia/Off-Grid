@@ -984,7 +984,7 @@ apiHelpModalOverlay.addEventListener('click', (e) => {
 
 function openVideoModal(videoId, isVertical){
   videoModalBox.classList.toggle('vertical', !!isVertical);
-  videoModalIframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`;
+  videoModalIframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&vq=hd1080`;
   videoModalFallbackLink.href = `https://www.youtube.com/watch?v=${videoId}`;
   videoModalOverlay.classList.add('open');
 }

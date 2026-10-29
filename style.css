@@ -98,10 +98,12 @@
   .modal-box button{ margin-top:4px; }
   #infoCloseBtn{ margin-left:8px; }
 
+  /* Landscape: as wide as 75% of the screen, but never taller than 75% of its height */
   .video-modal-box{
-    position:relative; width:100%; max-width:900px;
+    position:relative; width:min(75vw, calc(75vh * 16 / 9));
   }
-  .video-modal-box.vertical{ max-width:380px; }
+  /* Shorts: up to 75% of the screen height, kept in a 9:16 frame */
+  .video-modal-box.vertical{ width:min(75vw, calc(75vh * 9 / 16)); }
   .video-modal-frame{
     position:relative; width:100%; aspect-ratio:16/9; background:#000; border-radius:10px; overflow:hidden;
   }
