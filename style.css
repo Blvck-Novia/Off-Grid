@@ -98,12 +98,14 @@
   .modal-box button{ margin-top:4px; }
   #infoCloseBtn{ margin-left:8px; }
 
-  /* Landscape: as wide as 75% of the screen, but never taller than 75% of its height */
+  /* Darker backdrop just for the video pop-out (Info/Help windows keep the lighter one) */
+  #videoModalOverlay{ background:rgba(0,0,0,0.9); }
+  /* Landscape: up to 90% of the screen width, leaving room above/below for the close button and fallback link */
   .video-modal-box{
-    position:relative; width:min(75vw, calc(75vh * 16 / 9));
+    position:relative; width:min(90vw, calc(80vh * 16 / 9));
   }
-  /* Shorts: up to 75% of the screen height, kept in a 9:16 frame */
-  .video-modal-box.vertical{ width:min(75vw, calc(75vh * 9 / 16)); }
+  /* Shorts: up to 80% of the screen height, kept in a 9:16 frame */
+  .video-modal-box.vertical{ width:min(90vw, calc(80vh * 9 / 16)); }
   .video-modal-frame{
     position:relative; width:100%; aspect-ratio:16/9; background:#000; border-radius:10px; overflow:hidden;
   }
