@@ -166,7 +166,9 @@ let channels = []; // {id, name, avatar}
 let videos = [];   // merged regular-video list (unfiltered)
 let shorts = [];   // merged shorts list (unfiltered)
 const activeGenres = new Set(); // genres currently checked in the filter dropdown
-const selectedChannelIds = new Set(); // when non-empty, feeds show only these creators' content
+const selectedChannelIds = new Set(); // creators picked by clicking their name
+const selectedGenres = new Set();     // categories picked by clicking the category name
+// When either set is non-empty, the feeds show only videos from the picked creators OR picked categories.
 
 const grid = document.getElementById('grid');
 const chipRail = document.getElementById('chipRail');
@@ -326,6 +328,9 @@ function syncActiveGenres(){
   const present = new Set(currentGenreList());
   Array.from(activeGenres).forEach(g => { if(!present.has(g)) activeGenres.delete(g); });
   present.forEach(g => { if(!activeGenres.has(g)) activeGenres.add(g); });
+  // A selected category that no longer exists (e.g. its creators were removed or re-tagged) can't stay selected
+  Array.from(selectedGenres).forEach(g => { if(!present.has(g)) selectedGenres.delete(g); });
+  updateSoloBadge();
 }
 
 function renderFilterDropdown(){
@@ -357,15 +362,21 @@ function renderFilterDropdown(){
   };
   document.getElementById('filterClearBtn').onclick = () => {
     activeGenres.clear();
+    selectedGenres.clear();
+    updateSoloBadge();
     renderFilterDropdown();
+    renderChips();
     renderVideos();
     renderShorts();
   };
   filterDropdown.querySelectorAll('input[type="checkbox"]').forEach(box => {
     box.addEventListener('change', () => {
       const g = box.dataset.genre;
-      if(box.checked) activeGenres.add(g); else activeGenres.delete(g);
+      if(box.checked) activeGenres.add(g);
+      else { activeGenres.delete(g); selectedGenres.delete(g); } // a hidden category can't also be "selected"
       genreFilterBtn.classList.toggle('active', activeGenres.size < genres.length);
+      updateSoloBadge();
+      renderChips();
       renderVideos();
       renderShorts();
     });
@@ -406,15 +417,31 @@ function renderChips(){
     const group = document.createElement('div');
     group.className = 'genre-group';
 
-    const header = document.createElement('button');
-    header.type = 'button';
-    header.className = 'genre-header';
-    header.innerHTML = `<span class="genre-arrow">${isCollapsed ? '▸' : '▾'}</span><span class="genre-name">${escapeHtml(genre)}</span><span class="count">${groups[genre].length}</span>`;
-    header.onclick = () => {
+    const header = document.createElement('div');
+    header.className = 'genre-header' + (selectedGenres.has(genre) ? ' selected' : '');
+
+    // The arrow only expands/collapses the list...
+    const arrowBtn = document.createElement('button');
+    arrowBtn.type = 'button';
+    arrowBtn.className = 'genre-arrow-btn';
+    arrowBtn.textContent = isCollapsed ? '▸' : '▾';
+    arrowBtn.title = isCollapsed ? `Expand ${genre}` : `Collapse ${genre}`;
+    arrowBtn.onclick = () => {
       if(collapsedGenres.has(genre)) collapsedGenres.delete(genre);
       else collapsedGenres.add(genre);
       renderChips();
     };
+
+    // ...while clicking the category name selects/deselects it as a feed filter.
+    const labelBtn = document.createElement('button');
+    labelBtn.type = 'button';
+    labelBtn.className = 'genre-label-btn';
+    labelBtn.title = selectedGenres.has(genre) ? `Click to stop filtering by ${genre}` : `Click to show only ${genre}`;
+    labelBtn.innerHTML = `<span class="genre-name">${escapeHtml(genre)}</span><span class="count">${groups[genre].length}</span>`;
+    labelBtn.onclick = () => toggleGenreSelection(genre);
+
+    header.appendChild(arrowBtn);
+    header.appendChild(labelBtn);
     group.appendChild(header);
 
     if(!isCollapsed){
@@ -462,6 +489,12 @@ function buildChip(ch){
 
 const MAX_SELECTED_CHANNELS = 3;
 
+function matchesSelection(v){
+  if(!activeGenres.has(v.channelGenre)) return false;
+  if(selectedChannelIds.size === 0 && selectedGenres.size === 0) return true;
+  return selectedChannelIds.has(v.channelId) || selectedGenres.has(v.channelGenre);
+}
+
 function toggleChannelSelection(id){
   if(selectedChannelIds.has(id)){
     selectedChannelIds.delete(id);
@@ -478,8 +511,23 @@ function toggleChannelSelection(id){
   renderShorts();
 }
 
+function toggleGenreSelection(genre){
+  if(selectedGenres.has(genre)){
+    selectedGenres.delete(genre);
+  } else {
+    selectedGenres.add(genre);
+    activeGenres.add(genre); // picking a category makes sure it isn't hidden by the Filter dropdown
+    renderFilterDropdown();
+  }
+  updateSoloBadge();
+  renderChips();
+  renderVideos();
+  renderShorts();
+}
+
 function clearChannelSelection(){
   selectedChannelIds.clear();
+  selectedGenres.clear();
   updateSoloBadge();
   renderChips();
   renderVideos();
@@ -487,9 +535,12 @@ function clearChannelSelection(){
 }
 
 function updateSoloBadge(){
-  if(selectedChannelIds.size > 0){
-    const names = channels.filter(c => selectedChannelIds.has(c.id)).map(c => c.name);
-    soloBadgeName.textContent = names.length <= 3 ? names.join(', ') : `${names.length} creators`;
+  const picked = [
+    ...selectedGenres,
+    ...channels.filter(c => selectedChannelIds.has(c.id)).map(c => c.name)
+  ];
+  if(picked.length > 0){
+    soloBadgeName.textContent = picked.length <= 3 ? picked.join(', ') : `${picked.length} selected`;
     soloBadge.style.display = 'inline-flex';
   } else {
     soloBadge.style.display = 'none';
@@ -586,7 +637,7 @@ function buildEditRow(ch){
 
 function renderShorts(){
   shortsScroll.innerHTML = '';
-  const list = shorts.filter(v => activeGenres.has(v.channelGenre) && (selectedChannelIds.size === 0 || selectedChannelIds.has(v.channelId)));
+  const list = shorts.filter(v => matchesSelection(v));
   shortsCount.textContent = list.length;
   if(shorts.length === 0){
     shortsScroll.innerHTML = '<div class="panel-empty">No Shorts found.</div>';
@@ -824,7 +875,7 @@ function renderSkeletons(n=8){
 
 function renderVideos(){
   grid.innerHTML = '';
-  const list = videos.filter(v => activeGenres.has(v.channelGenre) && (selectedChannelIds.size === 0 || selectedChannelIds.has(v.channelId)));
+  const list = videos.filter(v => matchesSelection(v));
   videosCount.textContent = list.length;
   if(channels.length === 0){
     grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">

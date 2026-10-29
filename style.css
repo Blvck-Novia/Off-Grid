@@ -143,7 +143,7 @@
   .panel-title{
     font-family: var(--font-body); font-size:16px; font-weight:700;
     color: var(--text); margin-bottom:14px; display:flex; align-items:center; gap:8px;
-    position: relative;
+    position: relative; min-height:34px; /* same height for all three headings so the text lines up */
   }
   .panel-title .count{
     background: var(--panel-2); color:var(--text-dim); border-radius:10px; padding:1px 8px; font-size:12px; font-weight:500;
@@ -227,13 +227,21 @@
   }
   .genre-group{ margin-bottom:6px; }
   .genre-header{
-    width:100%; display:flex; align-items:center; gap:8px;
-    background:transparent; border:none; color: var(--amber);
-    font-family: var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase;
-    padding:8px 4px; cursor:pointer; border-radius:6px;
+    width:100%; display:flex; align-items:center; gap:2px;
+    border:1px solid transparent; border-radius:6px; background:transparent;
   }
-  .genre-header:hover{ background: var(--panel-2); border-color:transparent; color: var(--amber); }
-  .genre-arrow{ font-size:10px; width:10px; flex:0 0 auto; color: var(--amber); }
+  .genre-header:hover{ background: var(--panel-2); }
+  .genre-header.selected{ background: rgba(255,178,56,0.1); border-color: var(--amber-dim); }
+  .genre-header button{
+    background:transparent; border:none; color: var(--amber); cursor:pointer; border-radius:6px;
+    font-family: var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase;
+  }
+  .genre-header button:hover{ background:transparent; border-color:transparent; color: var(--amber); }
+  .genre-arrow-btn{ flex:0 0 auto; padding:8px 6px 8px 6px; font-size:11px; }
+  .genre-arrow-btn:hover{ background: rgba(255,178,56,0.15) !important; }
+  .genre-label-btn{
+    flex:1; min-width:0; display:flex; align-items:center; gap:8px; padding:8px 6px 8px 2px; text-align:left;
+  }
   .genre-name{ flex:1; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .genre-header .count{ background: var(--panel-2); color:var(--text-dim); border-radius:10px; padding:1px 7px; font-size:10.5px; }
   .genre-items{ display:flex; flex-direction:column; gap:2px; padding-left:18px; }
