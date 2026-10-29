@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Off Grid — Creator Feed</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="scanline"></div>
+<header>
+  <div class="brand-block">
+    <div class="brand"><span class="dot"></span><h1>OFF GRID</h1></div>
+    <div class="tagline">Latest uploads from your creators</div>
+  </div>
+  <div class="actions">
+    <nav class="site-nav">
+      <a href="index.html" class="active">Home</a>
+      <a href="faq.html">FAQ</a>
+      <a href="feedback.html">Feedback</a>
+    </nav>
+    <button id="infoBtn" title="How to use">ⓘ Info</button>
+    <button id="refreshBtn">↻ Refresh</button>
+  </div>
+</header>
+
+<main>
+  <form class="add-bar" id="addForm">
+    <input id="channelInput" type="text" placeholder="Add a creator — paste a channel URL, @handle, or channel ID" autocomplete="off">
+    <input id="genreInput" list="genreList" type="text" placeholder="Genre (leave blank to auto-detect)" autocomplete="off">
+    <datalist id="genreList">
+      <option value="Gaming"><option value="Music"><option value="Tech"><option value="Education">
+      <option value="Comedy"><option value="Cooking"><option value="Vlogs"><option value="Sports">
+      <option value="News"><option value="Film & Animation"><option value="Science">
+    </datalist>
+    <button type="submit" class="btn-primary">Add creator</button>
+  </form>
+
+  <div class="layout">
+    <aside class="creators-panel">
+      <div class="panel-title">
+        Creators <span class="count" id="creatorsCount">0</span>
+        <button type="button" id="genreFilterBtn" class="filter-btn" title="Filter by genre">⏷ Filter</button>
+        <button type="button" id="undoRemoveBtn" class="filter-btn" title="Undo last removal" disabled>Undo</button>
+        <div class="filter-dropdown" id="filterDropdown"></div>
+      </div>
+      <div id="chipRail" class="chip-list"></div>
+    </aside>
+
+    <section class="feed-col">
+      <div class="panel-title">
+        Videos <span class="count" id="videosCount">0</span>
+        <span class="solo-badge" id="soloBadge" style="display:none;">
+          Only: <span id="soloBadgeName"></span>
+          <button type="button" id="soloClearBtn" title="Show all creators">✕</button>
+        </span>
+      </div>
+      <div id="statusLine" class="status-line"></div>
+      <div class="feed-scroll">
+        <div id="grid" class="grid"></div>
+      </div>
+    </section>
+
+    <aside class="shorts-rail">
+      <div class="panel-title">Shorts <span class="count" id="shortsCount">0</span></div>
+      <div id="shortsScroll" class="shorts-scroll"></div>
+    </aside>
+  </div>
+</main>
+
+<footer class="apikey-footer" id="apiKeyFooter">
+  <div class="apikey-bar" id="apiKeyBar">
+    <label for="apiKeyInput" class="apikey-bar-label">API Key:</label>
+    <input id="apiKeyInput" type="password" placeholder="Paste your free YouTube Data API key here">
+    <button type="button" id="apiKeyToggleBtn" title="Show/hide key">👁</button>
+    <button type="button" id="apiKeySaveBtn">Save key</button>
+    <button type="button" id="apiKeyHelpBtn" title="How to get an API key">❓ Help</button>
+    <a class="apikey-link" href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener">Get a free key</a>
+  </div>
+
+  <div class="apikey-bar" id="dataBar">
+    <span class="data-bar-label">Your list</span>
+    <button type="button" id="exportBtn">⭳ Export</button>
+    <button type="button" id="importBtn">⭱ Import</button>
+    <input type="file" id="importFileInput" accept=".json,application/json" hidden>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="infoModalOverlay">
+  <div class="modal-box">
+    <div class="modal-title">How this works</div>
+    <ol class="modal-steps">
+      <li>Scroll to the <strong>bottom-left</strong> of the page and paste in a free YouTube Data API key — that's what lets this page fetch real video data from YouTube.</li>
+      <li>Don't have one? Click <strong>"Get a free key"</strong> down there, enable "YouTube Data API v3" in Google Cloud Console, then create an API key. No billing needed.</li>
+      <li>Use the box at the top to add creators by URL, @handle, or channel ID — tag a genre or leave it blank to auto-detect one.</li>
+      <li>Your creators, genres, and key are all saved in this browser, so they'll be here next time.</li>
+      <li>Opened this file directly (double-clicked it)? Videos will open on YouTube in a new tab instead of the pop-up player — YouTube blocks its embedded player from pages loaded that way.</li>
+    </ol>
+    <button type="button" class="btn-primary" id="infoTakeMeThereBtn">Take me to the API key box</button>
+    <button type="button" id="infoCloseBtn">Close</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="apiHelpModalOverlay">
+  <div class="modal-box">
+    <div class="modal-title">Getting a free YouTube API key</div>
+    <ol class="modal-steps">
+      <li>Go to <strong>console.cloud.google.com</strong> and sign in with any Google account.</li>
+      <li>Create a new project — the name doesn't matter, anything works.</li>
+      <li>Use the search bar at the top and search for <strong>"YouTube Data API v3"</strong>, open it, and click <strong>Enable</strong>.</li>
+      <li>Go to <strong>APIs &amp; Services → Credentials → Create Credentials → API key</strong>. Google will generate a key — copy it.</li>
+      <li>Click <strong>Edit API key</strong> to set restrictions (recommended, not required): under "Application restrictions" choose <strong>None</strong>, and under "API restrictions" choose <strong>Restrict key</strong> and select just <strong>YouTube Data API v3</strong>. Save.</li>
+      <li>Paste the key into the box below and hit <strong>Save key</strong>. That's it — no billing setup needed, and the free daily quota is far more than enough for personal use.</li>
+    </ol>
+    <button type="button" class="btn-primary" id="apiHelpCloseBtn">Got it</button>
+    <a class="apikey-link" href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener" style="margin-left:12px;">Open Google Cloud Console →</a>
+  </div>
+</div>
+
+<div class="modal-overlay" id="videoModalOverlay">
+  <div class="video-modal-box" id="videoModalBox">
+    <button type="button" class="video-modal-close" id="videoModalCloseBtn" title="Close">✕</button>
+    <div class="video-modal-frame">
+      <iframe id="videoModalIframe" src="" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    </div>
+    <a id="videoModalFallbackLink" class="video-modal-fallback" href="#" target="_blank" rel="noopener">Not playing? Watch on YouTube instead ↗</a>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'channels';
+// YouTube's embedded player refuses to load at all from a file:// page (Error 153),
+// so when opened that way we skip the pop-out player and just open videos in a new tab.
+const canEmbedVideos = window.location.protocol !== 'file:';
+const APIKEY_STORAGE_KEY = 'yt_api_key';
+const WATCHED_STORAGE_KEY = 'watched_videos';
+const WATCHED_HISTORY_CAP = 2000; // trim oldest entries beyond this to keep storage small
+let watchedVideoIds = new Set();
+let apiKey = '';
+
+async function ytFetch(endpoint, params){
+  if(!apiKey) throw new Error('Add your YouTube API key above first (it\'s free — see "Get a free key").');
+  const url = new URL('https://www.googleapis.com/youtube/v3/' + endpoint);
+  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+  url.searchParams.set('key', apiKey);
+  const res = await fetch(url.toString());
+  let data;
+  try{ data = await res.json(); }catch(e){ data = null; }
+  if(!res.ok){
+    const msg = data && data.error && data.error.message ? data.error.message : ('HTTP ' + res.status);
+    throw new Error('YouTube API error: ' + msg);
+  }
+  return data;
+}
+
+function parseISODuration(iso){
+  if(!iso) return null;
+  const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if(!m) return null;
+  const h = parseInt(m[1]||0,10), mnt = parseInt(m[2]||0,10), s = parseInt(m[3]||0,10);
+  return h*3600 + mnt*60 + s;
+}
+
+let channels = []; // {id, name, avatar}
+let videos = [];   // merged regular-video list (unfiltered)
+let shorts = [];   // merged shorts list (unfiltered)
+const activeGenres = new Set(); // genres currently checked in the filter dropdown
+const selectedChannelIds = new Set(); // when non-empty, feeds show only these creators' content
+
+const grid = document.getElementById('grid');
+const chipRail = document.getElementById('chipRail');
+const shortsScroll = document.getElementById('shortsScroll');
+const shortsCount = document.getElementById('shortsCount');
+const genreFilterBtn = document.getElementById('genreFilterBtn');
+const undoRemoveBtn = document.getElementById('undoRemoveBtn');
+const soloBadge = document.getElementById('soloBadge');
+const soloBadgeName = document.getElementById('soloBadgeName');
+const soloClearBtn = document.getElementById('soloClearBtn');
+const filterDropdown = document.getElementById('filterDropdown');
+const creatorsCount = document.getElementById('creatorsCount');
+const videosCount = document.getElementById('videosCount');
+const statusLine = document.getElementById('statusLine');
+const addForm = document.getElementById('addForm');
+const channelInput = document.getElementById('channelInput');
+const genreInput = document.getElementById('genreInput');
+const refreshBtn = document.getElementById('refreshBtn');
+const infoBtn = document.getElementById('infoBtn');
+const infoModalOverlay = document.getElementById('infoModalOverlay');
+const infoCloseBtn = document.getElementById('infoCloseBtn');
+const infoTakeMeThereBtn = document.getElementById('infoTakeMeThereBtn');
+const videoModalOverlay = document.getElementById('videoModalOverlay');
+const videoModalBox = document.getElementById('videoModalBox');
+const videoModalIframe = document.getElementById('videoModalIframe');
+const videoModalCloseBtn = document.getElementById('videoModalCloseBtn');
+const videoModalFallbackLink = document.getElementById('videoModalFallbackLink');
+const apiKeyFooter = document.getElementById('apiKeyFooter');
+const apiKeyInput = document.getElementById('apiKeyInput');
+const apiKeyToggleBtn = document.getElementById('apiKeyToggleBtn');
+const apiKeySaveBtn = document.getElementById('apiKeySaveBtn');
+const apiKeyHelpBtn = document.getElementById('apiKeyHelpBtn');
+const apiHelpModalOverlay = document.getElementById('apiHelpModalOverlay');
+const apiHelpCloseBtn = document.getElementById('apiHelpCloseBtn');
+const exportBtn = document.getElementById('exportBtn');
+const importBtn = document.getElementById('importBtn');
+const importFileInput = document.getElementById('importFileInput');
+
+function setStatus(msg, isError=false){
+  statusLine.textContent = msg || '';
+  statusLine.classList.toggle('error', !!isError);
+}
+
+let saveQueue = Promise.resolve();
+
+// window.storage only exists inside Claude's own artifact viewer. When this file is
+// opened directly (downloaded, hosted elsewhere), we fall back to plain localStorage
+// so your creator list still survives a refresh.
+const hasClaudeStorage = typeof window.storage !== 'undefined' && window.storage !== null;
+
+async function persistGet(key){
+  if(hasClaudeStorage){
+    try{
+      const res = await window.storage.get(key, false);
+      return res ? res.value : null;
+    }catch(e){
+      return null; // key not found on first run
+    }
+  }
+  try{
+    return window.localStorage.getItem(key);
+  }catch(e){
+    return null;
+  }
+}
+
+async function persistSet(key, value){
+  if(hasClaudeStorage){
+    const result = await window.storage.set(key, value, false);
+    if(!result) throw new Error('window.storage.set returned no result');
+    return;
+  }
+  window.localStorage.setItem(key, value);
+}
+
+async function loadChannels(){
+  try{
+    const raw = await persistGet(STORAGE_KEY);
+    channels = raw ? JSON.parse(raw) : [];
+  }catch(e){
+    channels = [];
+  }
+}
+
+function saveChannels(){
+  // Chain onto the previous save so concurrent adds can't overwrite each other out of order.
+  saveQueue = saveQueue.then(async () => {
+    try{
+      await persistSet(STORAGE_KEY, JSON.stringify(channels));
+    }catch(e){
+      console.error('Storage save failed', e);
+      setStatus('Could not save your creator list — it may not stick after a refresh.', true);
+    }
+  });
+  return saveQueue;
+}
+
+async function loadWatchedVideos(){
+  try{
+    const raw = await persistGet(WATCHED_STORAGE_KEY);
+    watchedVideoIds = raw ? new Set(JSON.parse(raw)) : new Set();
+  }catch(e){
+    watchedVideoIds = new Set();
+  }
+}
+
+let watchedSaveQueue = Promise.resolve();
+function saveWatchedVideos(){
+  watchedSaveQueue = watchedSaveQueue.then(async () => {
+    try{
+      let list = Array.from(watchedVideoIds);
+      if(list.length > WATCHED_HISTORY_CAP){
+        list = list.slice(list.length - WATCHED_HISTORY_CAP); // drop oldest
+        watchedVideoIds = new Set(list);
+      }
+      await persistSet(WATCHED_STORAGE_KEY, JSON.stringify(list));
+    }catch(e){
+      console.error('Could not save watched history', e);
+    }
+  });
+  return watchedSaveQueue;
+}
+
+function markVideoWatched(videoId){
+  if(!videoId || watchedVideoIds.has(videoId)) return;
+  watchedVideoIds.add(videoId);
+  saveWatchedVideos();
+}
+
+// Adds the "Just watched" darkened overlay onto a thumbnail element immediately,
+// without needing a full re-render (which would lose scroll position).
+function markThumbAsWatched(thumbEl){
+  if(!thumbEl || thumbEl.classList.contains('watched')) return;
+  thumbEl.classList.add('watched');
+  const overlay = document.createElement('div');
+  overlay.className = 'watched-overlay';
+  overlay.textContent = 'Just watched';
+  thumbEl.appendChild(overlay);
+}
+
+const collapsedGenres = new Set();
+let editingChannelId = null;
+
+function currentGenreList(){
+  const set = new Set(channels.map(ch => ch.genre || 'Uncategorised'));
+  return Array.from(set).sort((a,b) => {
+    if(a === 'Uncategorised') return 1;
+    if(b === 'Uncategorised') return -1;
+    return a.localeCompare(b);
+  });
+}
+
+// Keep activeGenres in sync with whatever genres currently exist: newly-seen genres
+// default to checked (visible), while genres the user has unchecked stay unchecked
+// even across refreshes, as long as that genre is still in use.
+function syncActiveGenres(){
+  const present = new Set(currentGenreList());
+  Array.from(activeGenres).forEach(g => { if(!present.has(g)) activeGenres.delete(g); });
+  present.forEach(g => { if(!activeGenres.has(g)) activeGenres.add(g); });
+}
+
+function renderFilterDropdown(){
+  const genres = currentGenreList();
+  genreFilterBtn.classList.toggle('active', activeGenres.size < genres.length);
+  if(genres.length === 0){
+    filterDropdown.innerHTML = '<div class="panel-empty">Add a creator to filter by genre.</div>';
+    return;
+  }
+  const actions = `<div class="filter-dropdown-actions">
+    <button type="button" id="filterSelectAllBtn">Select all</button>
+    <button type="button" id="filterClearBtn">Clear all</button>
+  </div>`;
+  const options = genres.map(g => {
+    const checked = activeGenres.has(g) ? 'checked' : '';
+    const safeId = 'filt_' + g.replace(/[^a-z0-9]/gi, '_');
+    return `<label class="filter-option" for="${safeId}">
+      <input type="checkbox" id="${safeId}" data-genre="${escapeHtml(g)}" ${checked}>
+      ${escapeHtml(g)}
+    </label>`;
+  }).join('');
+  filterDropdown.innerHTML = actions + options;
+
+  document.getElementById('filterSelectAllBtn').onclick = () => {
+    genres.forEach(g => activeGenres.add(g));
+    renderFilterDropdown();
+    renderVideos();
+    renderShorts();
+  };
+  document.getElementById('filterClearBtn').onclick = () => {
+    activeGenres.clear();
+    renderFilterDropdown();
+    renderVideos();
+    renderShorts();
+  };
+  filterDropdown.querySelectorAll('input[type="checkbox"]').forEach(box => {
+    box.addEventListener('change', () => {
+      const g = box.dataset.genre;
+      if(box.checked) activeGenres.add(g); else activeGenres.delete(g);
+      genreFilterBtn.classList.toggle('active', activeGenres.size < genres.length);
+      renderVideos();
+      renderShorts();
+    });
+  });
+}
+
+genreFilterBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  filterDropdown.classList.toggle('open');
+});
+document.addEventListener('click', (e) => {
+  if(filterDropdown.classList.contains('open') && !filterDropdown.contains(e.target) && e.target !== genreFilterBtn){
+    filterDropdown.classList.remove('open');
+  }
+});
+
+function renderChips(){
+  chipRail.innerHTML = '';
+  creatorsCount.textContent = channels.length;
+  if(channels.length === 0){
+    chipRail.innerHTML = '<div class="panel-empty">No creators yet — add one above.</div>';
+    return;
+  }
+
+  const groups = {};
+  channels.forEach(ch => {
+    const genre = ch.genre || 'Uncategorised';
+    (groups[genre] = groups[genre] || []).push(ch);
+  });
+  const genreNames = Object.keys(groups).sort((a,b) => {
+    if(a === 'Uncategorised') return 1;
+    if(b === 'Uncategorised') return -1;
+    return a.localeCompare(b);
+  });
+
+  genreNames.forEach(genre => {
+    const isCollapsed = collapsedGenres.has(genre);
+    const group = document.createElement('div');
+    group.className = 'genre-group';
+
+    const header = document.createElement('button');
+    header.type = 'button';
+    header.className = 'genre-header';
+    header.innerHTML = `<span class="genre-arrow">${isCollapsed ? '▸' : '▾'}</span><span class="genre-name">${escapeHtml(genre)}</span><span class="count">${groups[genre].length}</span>`;
+    header.onclick = () => {
+      if(collapsedGenres.has(genre)) collapsedGenres.delete(genre);
+      else collapsedGenres.add(genre);
+      renderChips();
+    };
+    group.appendChild(header);
+
+    if(!isCollapsed){
+      const items = document.createElement('div');
+      items.className = 'genre-items';
+      groups[genre].forEach(ch => {
+        if(editingChannelId === ch.id){
+          items.appendChild(buildEditRow(ch));
+        } else {
+          items.appendChild(buildChip(ch));
+        }
+      });
+      group.appendChild(items);
+    }
+
+    chipRail.appendChild(group);
+  });
+}
+
+function buildChip(ch){
+  const chip = document.createElement('div');
+  chip.className = 'chan-chip';
+  if(selectedChannelIds.has(ch.id)) chip.classList.add('solo-active');
+
+  const nameEl = document.createElement('strong');
+  nameEl.textContent = ch.name;
+  nameEl.title = selectedChannelIds.has(ch.id) ? `Click to remove ${ch.name} from selection` : `Click to add ${ch.name} to selection (up to ${MAX_SELECTED_CHANNELS} at a time)`;
+  nameEl.onclick = () => toggleChannelSelection(ch.id);
+  chip.appendChild(nameEl);
+
+  const editBtn = document.createElement('button');
+  editBtn.textContent = '✎';
+  editBtn.title = 'Edit genre';
+  editBtn.onclick = () => { editingChannelId = ch.id; renderChips(); };
+  chip.appendChild(editBtn);
+
+  const rm = document.createElement('button');
+  rm.textContent = '✕';
+  rm.title = 'Remove creator';
+  rm.onclick = () => removeChannel(ch.id);
+  chip.appendChild(rm);
+
+  return chip;
+}
+
+const MAX_SELECTED_CHANNELS = 3;
+
+function toggleChannelSelection(id){
+  if(selectedChannelIds.has(id)){
+    selectedChannelIds.delete(id);
+  } else {
+    selectedChannelIds.add(id);
+    if(selectedChannelIds.size > MAX_SELECTED_CHANNELS){
+      const oldest = selectedChannelIds.values().next().value; // Sets preserve insertion order
+      selectedChannelIds.delete(oldest);
+    }
+  }
+  updateSoloBadge();
+  renderChips();
+  renderVideos();
+  renderShorts();
+}
+
+function clearChannelSelection(){
+  selectedChannelIds.clear();
+  updateSoloBadge();
+  renderChips();
+  renderVideos();
+  renderShorts();
+}
+
+function updateSoloBadge(){
+  if(selectedChannelIds.size > 0){
+    const names = channels.filter(c => selectedChannelIds.has(c.id)).map(c => c.name);
+    soloBadgeName.textContent = names.length <= 3 ? names.join(', ') : `${names.length} creators`;
+    soloBadge.style.display = 'inline-flex';
+  } else {
+    soloBadge.style.display = 'none';
+  }
+}
+
+soloClearBtn.addEventListener('click', clearChannelSelection);
+
+const STANDARD_GENRES = ['Gaming','Music','Tech','Education','Comedy','Cooking','Vlogs','Sports','News','Film & Animation','Science'];
+const CUSTOM_GENRE_VALUE = '__custom__';
+
+function buildEditRow(ch){
+  const row = document.createElement('div');
+  row.className = 'chan-chip chan-chip-edit';
+
+  const label = document.createElement('strong');
+  label.textContent = ch.name;
+  row.appendChild(label);
+
+  const currentGenre = ch.genre || 'Uncategorised';
+  const isCustomCurrent = currentGenre !== 'Uncategorised' && !STANDARD_GENRES.includes(currentGenre);
+  const optionList = ['Uncategorised', ...STANDARD_GENRES];
+  if(isCustomCurrent) optionList.splice(1, 0, currentGenre); // keep the current custom genre selectable
+
+  const select = document.createElement('select');
+  select.className = 'edit-genre-select';
+  optionList.forEach(opt => {
+    const o = document.createElement('option');
+    o.value = opt;
+    o.textContent = opt;
+    if(opt === currentGenre) o.selected = true;
+    select.appendChild(o);
+  });
+  const customOpt = document.createElement('option');
+  customOpt.value = CUSTOM_GENRE_VALUE;
+  customOpt.textContent = 'Other (type your own)…';
+  if(isCustomCurrent) customOpt.selected = false; // current custom value already has its own option
+  select.appendChild(customOpt);
+  row.appendChild(select);
+
+  const customInput = document.createElement('input');
+  customInput.type = 'text';
+  customInput.placeholder = 'Genre name';
+  customInput.className = 'edit-genre-custom-input';
+  customInput.style.display = 'none';
+  row.appendChild(customInput);
+
+  select.addEventListener('change', () => {
+    if(select.value === CUSTOM_GENRE_VALUE){
+      customInput.style.display = '';
+      customInput.value = '';
+      customInput.focus();
+    } else {
+      customInput.style.display = 'none';
+    }
+  });
+
+  const save = async () => {
+    const finalGenre = select.value === CUSTOM_GENRE_VALUE
+      ? (customInput.value.trim() || 'Uncategorised')
+      : select.value;
+    ch.genre = finalGenre;
+    editingChannelId = null;
+    await saveChannels();
+    renderChips();
+    syncActiveGenres();
+    renderFilterDropdown();
+    await loadAllVideos();
+  };
+
+  customInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){ e.preventDefault(); save(); }
+    if(e.key === 'Escape'){ editingChannelId = null; renderChips(); }
+  });
+  select.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape'){ editingChannelId = null; renderChips(); }
+  });
+
+  const saveBtn = document.createElement('button');
+  saveBtn.textContent = '✓';
+  saveBtn.title = 'Save';
+  saveBtn.onclick = save;
+  row.appendChild(saveBtn);
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.textContent = '✕';
+  cancelBtn.title = 'Cancel';
+  cancelBtn.onclick = () => { editingChannelId = null; renderChips(); };
+  row.appendChild(cancelBtn);
+
+  setTimeout(() => select.focus(), 0);
+  return row;
+}
+
+function renderShorts(){
+  shortsScroll.innerHTML = '';
+  const list = shorts.filter(v => activeGenres.has(v.channelGenre) && (selectedChannelIds.size === 0 || selectedChannelIds.has(v.channelId)));
+  shortsCount.textContent = list.length;
+  if(shorts.length === 0){
+    shortsScroll.innerHTML = '<div class="panel-empty">No Shorts found.</div>';
+    return;
+  }
+  if(list.length === 0){
+    shortsScroll.innerHTML = '<div class="panel-empty">No Shorts match the current filters.</div>';
+    return;
+  }
+  list.forEach(v => {
+    const a = document.createElement('a');
+    a.className = 'short-card';
+    a.href = v.url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    const isWatched = watchedVideoIds.has(v.id);
+    a.innerHTML = `
+      <div class="short-thumb${isWatched ? ' watched' : ''}">
+        <img src="${v.thumb}" alt="" loading="lazy">
+        <span class="short-badge">Short</span>
+        ${isWatched ? '<div class="watched-overlay">Just watched</div>' : ''}
+      </div>
+      <div class="short-info">
+        <div class="short-title">${escapeHtml(v.title)}</div>
+        <div class="short-chan">${escapeHtml(v.channelName)}</div>
+      </div>`;
+    a.addEventListener('click', (e) => {
+      markVideoWatched(v.id);
+      markThumbAsWatched(a.querySelector('.short-thumb'));
+      if(!canEmbedVideos) return; // fall back to normal new-tab navigation
+      if(e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return; // let it open in a new tab as usual
+      e.preventDefault();
+      openVideoModal(v.id, true);
+    });
+    shortsScroll.appendChild(a);
+  });
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+const removedChannelsStack = []; // most-recently-removed last, capped at 10 for undo
+
+function updateUndoButton(){
+  undoRemoveBtn.disabled = removedChannelsStack.length === 0;
+  undoRemoveBtn.title = removedChannelsStack.length > 0
+    ? `Undo removing "${removedChannelsStack[removedChannelsStack.length - 1].name}" (${removedChannelsStack.length} available)`
+    : 'Undo last removal';
+}
+
+async function removeChannel(id){
+  const removed = channels.find(c => c.id === id);
+  channels = channels.filter(c => c.id !== id);
+  if(removed){
+    removedChannelsStack.push(removed);
+    if(removedChannelsStack.length > 10) removedChannelsStack.shift();
+    updateUndoButton();
+  }
+  if(selectedChannelIds.has(id)){ selectedChannelIds.delete(id); updateSoloBadge(); }
+  await saveChannels();
+  renderChips();
+  syncActiveGenres();
+  renderFilterDropdown();
+  await loadAllVideos();
+}
+
+undoRemoveBtn.addEventListener('click', async () => {
+  const restored = removedChannelsStack.pop();
+  updateUndoButton();
+  if(!restored) return;
+  if(channels.some(c => c.id === restored.id)){
+    setStatus(`"${restored.name}" is already back in your list.`);
+    return;
+  }
+  channels.push(restored);
+  await saveChannels();
+  renderChips();
+  syncActiveGenres();
+  renderFilterDropdown();
+  await loadAllVideos();
+  setStatus(`Restored "${restored.name}".`);
+});
+
+function normalizeInput(raw){
+  raw = raw.trim();
+  if(!raw) return null;
+  // direct channel ID
+  if(/^UC[a-zA-Z0-9_-]{20,}$/.test(raw)) return { type:'id', value: raw };
+  // handle without @
+  if(/^[a-zA-Z0-9_.-]+$/.test(raw) && !raw.includes('/')) return { type:'handle', value: raw.replace(/^@/,'') };
+  // URL forms
+  try{
+    let url = raw;
+    if(!/^https?:\/\//.test(url)) url = 'https://' + url;
+    const u = new URL(url);
+    const parts = u.pathname.split('/').filter(Boolean);
+    if(parts[0] === 'channel' && parts[1]) return { type:'id', value: parts[1] };
+    if(parts[0] && parts[0].startsWith('@')) return { type:'handle', value: parts[0].slice(1) };
+    if((parts[0] === 'c' || parts[0] === 'user') && parts[1]) return { type:'handle', value: parts[1] };
+    if(parts[0]) return { type:'handle', value: parts[0].replace(/^@/,'') };
+  }catch(e){}
+  return { type:'handle', value: raw.replace(/^@/,'') };
+}
+
+// YouTube's topicDetails gives broad Wikipedia-based category tags (e.g. a URL ending in
+// "Action-adventure_game" or "Pop_music"). We map the common ones onto our own genre list,
+// and fall back to a cleaned-up version of the raw tag when there's no mapping.
+const TOPIC_GENRE_MAP = {
+  'video game culture':'Gaming', 'action game':'Gaming', 'action-adventure game':'Gaming',
+  'role-playing video game':'Gaming', 'strategy video game':'Gaming', 'video game':'Gaming', 'esports':'Gaming',
+  'pop music':'Music', 'music of asia':'Music', 'music of africa':'Music', 'music of latin america':'Music',
+  'hip hop music':'Music', 'rock music':'Music', 'music video':'Music', 'electronic music':'Music',
+  'independent music':'Music', 'music':'Music',
+  'technology':'Tech', 'mobile phone':'Tech', 'software':'Tech', 'personal computer':'Tech',
+  'knowledge':'Education', 'education':'Education',
+  'food':'Cooking',
+  'lifestyle (sociology)':'Vlogs', 'fashion':'Vlogs', 'physical fitness':'Vlogs', 'vehicle':'Vlogs',
+  'sport':'Sports', 'association football':'Sports', 'basketball':'Sports', 'american football':'Sports',
+  'film':'Film & Animation', 'television program':'Film & Animation', 'animated cartoon':'Film & Animation',
+  'entertainment':'Film & Animation', 'action film':'Film & Animation',
+  'humour':'Comedy', 'comedy':'Comedy',
+  'politics':'News', 'society':'News',
+  'physics':'Science', 'biology':'Science', 'chemistry':'Science', 'natural science':'Science',
+};
+
+function titleCase(s){
+  return s.replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function guessGenreFromTopics(topicCategories){
+  if(!topicCategories || topicCategories.length === 0) return '';
+  const cleaned = topicCategories.map(url => {
+    const last = decodeURIComponent((url.split('/').pop() || '')).replace(/_/g, ' ');
+    return last.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  });
+  for(const raw of cleaned){
+    const mapped = TOPIC_GENRE_MAP[raw.toLowerCase()];
+    if(mapped) return mapped;
+  }
+  return cleaned[0] ? titleCase(cleaned[0]) : '';
+}
+
+async function resolveChannel(input){
+  const params = input.type === 'id'
+    ? { part: 'snippet,topicDetails', id: input.value }
+    : { part: 'snippet,topicDetails', forHandle: input.value };
+  const data = await ytFetch('channels', params);
+  if(!data.items || data.items.length === 0){
+    throw new Error('Could not find that channel. Double-check the handle, URL, or ID.');
+  }
+  const item = data.items[0];
+  const topicCategories = item.topicDetails ? item.topicDetails.topicCategories : null;
+  return {
+    id: item.id,
+    name: item.snippet.title,
+    suggestedGenre: guessGenreFromTopics(topicCategories)
+  };
+}
+
+async function fetchChannelVideos(channel){
+  const uploadsPlaylistId = 'UU' + channel.id.slice(2);
+  // 50 is the API's max per request. Pulling more than the ~15 we used to means a burst
+  // of Shorts from a prolific creator can no longer crowd a still-recent regular video
+  // out of the window entirely.
+  const data = await ytFetch('playlistItems', {
+    part: 'snippet,contentDetails',
+    playlistId: uploadsPlaylistId,
+    maxResults: 50
+  });
+  return (data.items || []).map(item => {
+    const videoId = item.contentDetails.videoId;
+    const publishedRaw = item.contentDetails.videoPublishedAt || item.snippet.publishedAt;
+    const publishedMs = Date.parse(publishedRaw);
+    const thumbs = item.snippet.thumbnails || {};
+    const thumb = (thumbs.maxres || thumbs.standard || thumbs.high || thumbs.medium || thumbs.default || {}).url || '';
+    return {
+      id: videoId,
+      title: item.snippet.title,
+      url: 'https://www.youtube.com/watch?v=' + videoId,
+      published: publishedRaw,
+      publishedMs: Number.isFinite(publishedMs) ? publishedMs : 0,
+      thumb,
+      channelId: channel.id,
+      channelName: channel.name,
+      channelGenre: channel.genre || 'Uncategorised'
+    };
+  });
+}
+
+// Shorts are generally 3 minutes or under; we ask the API for each video's real
+// duration and use that instead of guessing from a proxy-fetched embed.
+async function annotateDurations(list){
+  const ids = list.map(v => v.id).filter(Boolean);
+  const durationMap = {};
+  for(let i=0; i<ids.length; i+=50){
+    const batch = ids.slice(i, i+50);
+    if(batch.length === 0) continue;
+    const data = await ytFetch('videos', { part:'contentDetails', id: batch.join(',') });
+    (data.items || []).forEach(it => {
+      durationMap[it.id] = parseISODuration(it.contentDetails.duration);
+    });
+  }
+  return list.map(v => ({ ...v, durationSec: durationMap[v.id] ?? null }));
+}
+
+function splitByShorts(list){
+  const SHORTS_MAX_SECONDS = 180;
+  const regular = list.filter(v => !(v.durationSec != null && v.durationSec <= SHORTS_MAX_SECONDS));
+  const shortsOnly = list.filter(v => v.durationSec != null && v.durationSec <= SHORTS_MAX_SECONDS);
+  return { regular, shortsOnly };
+}
+
+function timeAgo(iso){
+  if(!iso) return '';
+  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+  if(diff < 60) return 'just now';
+  if(diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if(diff < 86400) return Math.floor(diff/3600) + 'h ago';
+  if(diff < 86400*7) return Math.floor(diff/86400) + 'd ago';
+  return new Date(iso).toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'});
+}
+
+function renderSkeletons(n=8){
+  grid.innerHTML = '';
+  for(let i=0;i<n;i++){
+    const s = document.createElement('div');
+    s.className = 'skeleton';
+    s.innerHTML = `<div class="thumb-wrap"></div><div class="card-body" style="height:70px;"></div>`;
+    grid.appendChild(s);
+  }
+}
+
+function renderVideos(){
+  grid.innerHTML = '';
+  const list = videos.filter(v => activeGenres.has(v.channelGenre) && (selectedChannelIds.size === 0 || selectedChannelIds.has(v.channelId)));
+  videosCount.textContent = list.length;
+  if(channels.length === 0){
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
+      <div class="big">No creators yet</div>
+      <div>Add a channel above to start your feed.</div>
+    </div>`;
+    return;
+  }
+  if(videos.length === 0){
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
+      <div class="big">Nothing to show</div>
+      <div>Try refreshing, or check your creator list.</div>
+    </div>`;
+    return;
+  }
+  if(list.length === 0){
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
+      <div class="big">No matches</div>
+      <div>No videos match the current filters.</div>
+    </div>`;
+    return;
+  }
+  list.forEach(v => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    const isWatched = watchedVideoIds.has(v.id);
+    card.innerHTML = `
+      <a class="thumb-wrap${isWatched ? ' watched' : ''}" href="${v.url}" target="_blank" rel="noopener">
+        <img src="${v.thumb}" alt="" loading="lazy">
+        ${isWatched ? '<div class="watched-overlay">Just watched</div>' : ''}
+      </a>
+      <div class="card-body">
+        <div class="card-title"><a href="${v.url}" target="_blank" rel="noopener">${escapeHtml(v.title)}</a></div>
+        <div class="card-meta">
+          <span class="chan-name">${escapeHtml(v.channelName)}</span>
+          <span class="timestamp">${timeAgo(v.published)}</span>
+        </div>
+      </div>`;
+    card.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', (e) => {
+        markVideoWatched(v.id);
+        markThumbAsWatched(card.querySelector('.thumb-wrap'));
+        if(!canEmbedVideos) return; // fall back to normal new-tab navigation
+        if(e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return; // let it open in a new tab as usual
+        e.preventDefault();
+        openVideoModal(v.id, false);
+      });
+    });
+    grid.appendChild(card);
+  });
+}
+
+async function loadAllVideos(){
+  if(channels.length === 0){
+    videos = [];
+    shorts = [];
+    renderVideos();
+    renderShorts();
+    return;
+  }
+  if(!apiKey){
+    setStatus('Add your YouTube API key above to load videos.', true);
+    videos = [];
+    shorts = [];
+    renderVideos();
+    renderShorts();
+    return;
+  }
+  renderSkeletons();
+  setStatus('Fetching latest uploads…');
+  refreshBtn.disabled = true;
+  const results = await Promise.allSettled(channels.map(fetchChannelVideos));
+  let all = [];
+  let failures = [];
+  results.forEach((r, i) => {
+    if(r.status === 'fulfilled') all = all.concat(r.value);
+    else failures.push(channels[i].name + ': ' + (r.reason && r.reason.message ? r.reason.message : 'failed'));
+  });
+  all.sort((a,b) => b.publishedMs - a.publishedMs);
+  try{
+    all = await annotateDurations(all);
+  }catch(e){
+    setStatus(e.message || 'Could not check video durations.', true);
+    refreshBtn.disabled = false;
+    return;
+  }
+  const { regular, shortsOnly } = splitByShorts(all);
+  videos = regular.slice(0, 60);
+  shorts = shortsOnly.slice(0, 30);
+  renderVideos();
+  renderShorts();
+  refreshBtn.disabled = false;
+  if(failures.length > 0){
+    setStatus(`Loaded feed, but some channels failed: ${failures.join('; ')}`, true);
+  } else {
+    setStatus(`Updated · ${videos.length} videos from ${channels.length} creator${channels.length>1?'s':''} · ${new Date().toLocaleTimeString()}`);
+  }
+}
+
+addForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const raw = channelInput.value;
+  const parsed = normalizeInput(raw);
+  if(!parsed){ setStatus('Enter a channel URL, @handle, or ID.', true); return; }
+  if(channels.some(c => c.id === parsed.value)){
+    setStatus('That creator is already in your feed.', true);
+    return;
+  }
+  setStatus('Looking up creator…');
+  const submitBtn = addForm.querySelector('button[type="submit"]');
+  const genre = genreInput.value.trim();
+  channelInput.disabled = true;
+  genreInput.disabled = true;
+  submitBtn.disabled = true;
+  try{
+    const resolved = await resolveChannel(parsed);
+    resolved.genre = genre || resolved.suggestedGenre || 'Uncategorised';
+    if(channels.some(c => c.id === resolved.id)){
+      setStatus('That creator is already in your feed.', true);
+    } else {
+      channels.push(resolved);
+      await saveChannels();
+      renderChips();
+      syncActiveGenres();
+      renderFilterDropdown();
+      channelInput.value = '';
+      genreInput.value = '';
+      await loadAllVideos();
+    }
+  }catch(err){
+    setStatus(err.message || 'Could not add that creator.', true);
+  }finally{
+    channelInput.disabled = false;
+    genreInput.disabled = false;
+    submitBtn.disabled = false;
+  }
+});
+
+refreshBtn.addEventListener('click', loadAllVideos);
+
+infoBtn.addEventListener('click', () => infoModalOverlay.classList.add('open'));
+infoCloseBtn.addEventListener('click', () => infoModalOverlay.classList.remove('open'));
+infoModalOverlay.addEventListener('click', (e) => {
+  if(e.target === infoModalOverlay) infoModalOverlay.classList.remove('open');
+});
+infoTakeMeThereBtn.addEventListener('click', () => {
+  infoModalOverlay.classList.remove('open');
+  apiKeyFooter.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  setTimeout(() => apiKeyInput.focus(), 400);
+});
+
+apiKeyHelpBtn.addEventListener('click', () => apiHelpModalOverlay.classList.add('open'));
+apiHelpCloseBtn.addEventListener('click', () => apiHelpModalOverlay.classList.remove('open'));
+apiHelpModalOverlay.addEventListener('click', (e) => {
+  if(e.target === apiHelpModalOverlay) apiHelpModalOverlay.classList.remove('open');
+});
+
+function openVideoModal(videoId, isVertical){
+  videoModalBox.classList.toggle('vertical', !!isVertical);
+  videoModalIframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`;
+  videoModalFallbackLink.href = `https://www.youtube.com/watch?v=${videoId}`;
+  videoModalOverlay.classList.add('open');
+}
+function closeVideoModal(){
+  videoModalOverlay.classList.remove('open');
+  videoModalIframe.src = ''; // stop playback
+}
+videoModalCloseBtn.addEventListener('click', closeVideoModal);
+videoModalOverlay.addEventListener('click', (e) => {
+  if(e.target === videoModalOverlay) closeVideoModal();
+});
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape'){
+    if(videoModalOverlay.classList.contains('open')) closeVideoModal();
+    else if(apiHelpModalOverlay.classList.contains('open')) apiHelpModalOverlay.classList.remove('open');
+    else if(infoModalOverlay.classList.contains('open')) infoModalOverlay.classList.remove('open');
+  }
+});
+
+exportBtn.addEventListener('click', () => {
+  if(channels.length === 0){
+    setStatus('No creators to export yet — add some first.', true);
+    return;
+  }
+  const payload = {
+    format: 'off-grid-creators',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    channels: channels.map(ch => ({ id: ch.id, name: ch.name, genre: ch.genre || 'Uncategorised' }))
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'off-grid-creators.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  setStatus(`Exported ${channels.length} creator${channels.length > 1 ? 's' : ''} to off-grid-creators.json`);
+});
+
+importBtn.addEventListener('click', () => importFileInput.click());
+
+importFileInput.addEventListener('change', async () => {
+  const file = importFileInput.files[0];
+  importFileInput.value = ''; // reset so re-selecting the same file still fires 'change'
+  if(!file) return;
+
+  let parsed;
+  try{
+    const text = await file.text();
+    parsed = JSON.parse(text);
+  }catch(e){
+    setStatus('That file isn\'t valid JSON — make sure you picked an exported creators file.', true);
+    return;
+  }
+
+  const incoming = Array.isArray(parsed) ? parsed : parsed.channels;
+  if(!Array.isArray(incoming)){
+    setStatus('That file doesn\'t look like a creators export.', true);
+    return;
+  }
+
+  let added = 0, skipped = 0, invalid = 0;
+  incoming.forEach(entry => {
+    if(!entry || typeof entry.id !== 'string' || typeof entry.name !== 'string'){ invalid++; return; }
+    if(channels.some(ch => ch.id === entry.id)){ skipped++; return; }
+    channels.push({ id: entry.id, name: entry.name, genre: entry.genre || 'Uncategorised' });
+    added++;
+  });
+
+  if(added === 0 && skipped === 0 && invalid > 0){
+    setStatus('Nothing usable found in that file.', true);
+    return;
+  }
+
+  await saveChannels();
+  renderChips();
+  syncActiveGenres();
+  renderFilterDropdown();
+  await loadAllVideos();
+
+  const parts = [`Imported ${added} creator${added !== 1 ? 's' : ''}`];
+  if(skipped > 0) parts.push(`${skipped} already in your list`);
+  if(invalid > 0) parts.push(`${invalid} entries skipped (invalid)`);
+  setStatus(parts.join(' · '));
+});
+
+async function loadApiKey(){
+  const raw = await persistGet(APIKEY_STORAGE_KEY);
+  apiKey = raw || '';
+  apiKeyInput.value = apiKey;
+}
+
+apiKeyToggleBtn.addEventListener('click', () => {
+  const hidden = apiKeyInput.type === 'password';
+  apiKeyInput.type = hidden ? 'text' : 'password';
+  apiKeyToggleBtn.textContent = hidden ? '🙈' : '👁';
+});
+
+apiKeySaveBtn.addEventListener('click', async () => {
+  apiKey = apiKeyInput.value.trim();
+  apiKeySaveBtn.disabled = true;
+  try{
+    await persistSet(APIKEY_STORAGE_KEY, apiKey);
+    setStatus(apiKey ? 'API key saved.' : 'API key cleared.');
+    if(apiKey && channels.length > 0) await loadAllVideos();
+  }catch(e){
+    setStatus('Could not save the API key.', true);
+  }finally{
+    apiKeySaveBtn.disabled = false;
+  }
+});
+
+(async function init(){
+  await loadApiKey();
+  await loadChannels();
+  await loadWatchedVideos();
+  renderChips();
+  syncActiveGenres();
+  renderFilterDropdown();
+  await loadAllVideos();
+})();
+</script>
+</body>
+</html>

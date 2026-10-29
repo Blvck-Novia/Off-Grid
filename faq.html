@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAQ — Off Grid</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="scanline"></div>
+<header>
+  <div class="brand-block">
+    <div class="brand"><span class="dot"></span><h1>OFF GRID</h1></div>
+    <div class="tagline">Latest uploads from your creators</div>
+  </div>
+  <div class="actions">
+    <nav class="site-nav">
+      <a href="index.html">Home</a>
+      <a href="faq.html" class="active">FAQ</a>
+      <a href="feedback.html">Feedback</a>
+    </nav>
+  </div>
+</header>
+
+<main class="content-page">
+  <p class="page-intro">
+    Off Grid is a small, personal tool for watching YouTube on your own terms — no algorithm deciding
+    what you see next, no autoplay pulling you into a rabbit hole, just the latest uploads from creators
+    <em>you</em> chose, in the order they were actually posted.
+  </p>
+
+  <h2>The basics</h2>
+
+  <div class="faq-item">
+    <button class="faq-question" type="button">
+      <span>What is this, exactly?</span>
+      <span class="faq-arrow">▸</span>
+    </button>
+    <div class="faq-answer">
+      <p>It's a self-contained web page that pulls the latest videos from a list of YouTube creators you pick,
+      and shows them to you in one simple feed — sorted purely by upload date, nothing else. There's no
+      "recommended for you," no trending tab, no algorithm nudging you toward anything. If you didn't add
+      the creator, you won't see their videos.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question" type="button">
+      <span>Why would I want this instead of just using YouTube?</span>
+      <span class="faq-arrow">▸</span>
+    </button>
+    <div class="faq-answer">
+      <p>YouTube's homepage and "Up Next" queue are built to maximise watch time — they're very good at
+      keeping you watching things you didn't plan to watch. Off Grid flips that: you decide the full list of
+      creators up front, and that's all you'll ever see here. It's a way to keep up with people you actually
+      follow without wading through everything else YouTube wants to show you.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question" type="button">
+      <span>Does this track me, sell my data, or show ads?</span>
+      <span class="faq-arrow">▸</span>
+    </button>
+    <div class="faq-answer">
+      <p>No. Everything — your creator list, genres, API key, and watched-video history — is stored only in
+      your own browser. Nothing is sent to any server of ours, because there isn't one; this is a static page
+      that talks directly to YouTube's official API using your own key. There's no tracking, no ads, and no
+      account to sign up for.</p>
+    </div>
+  </div>
+
+  <h2>The API key</h2>
+
+  <div class="faq-item">
+    <button class="faq-question" type="button">
+      <span>What is an API key, and why do I need one?</span>
+      <span class="faq-arrow">▸</span>
+    </button>
+    <div class="faq-answer">
+      <p>An API key is like a personal password that lets this page ask YouTube directly for data — the
+      latest videos from a channel, thumbnails, titles, and so on — through YouTube's official Data API.
+      Without a key, YouTube has no way to know who's asking or whether the request is legitimate, so it
+      won't respond. The key is free, tied to your own Google account, and only this page (running in your
+      browser) ever uses it.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question" type="button">
+      <span>Is it free? Will I get charged for anything?</span>
+      <span class="faq-arrow">▸</span>
+    </button>
+    <div class="faq-answer">
+      <p>Yes, completely free for normal personal use. Google gives every API key a free daily quota (10,000
+      units), and just browsing your feed uses a tiny fraction of that. No billing details are required to
+      create the key, and nothing here could rack up charges even if you left it running all day.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question" type="button">
+      <span>How do I get one?</span>
+      <span class="faq-arrow">▸</span>
+    </button>
+    <div class="faq-answer">
+      <p>Head back to the <a href="index.html">home page</a> and click the "❓ Help" button next to the API
+      key box at the bottom — it walks through the whole process step by step, from creating a free Google
+      Cloud project to pasting the finished key in.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question" type="button">
+      <span>Is my API key safe? Can anyone else see it?</span>
+      <span class="faq-arrow">▸</span>
+    </button>
+    <div class="faq-answer">
+      <p>Your key is stored only in your own browser and is never sent anywhere except directly to Google's
+      API. If you're sharing this page with other people (say, via a hosted link), each person needs to get
+      and enter their own key — keys are never shared between visitors, and nobody can see yours.</p>
+    </div>
+  </div>
+
+  <h2>Using it day to day</h2>
+
+  <div class="faq-item">
+    <button class="faq-question" type="button">
+      <span>Will my creator list still be there if I close the tab?</span>
+      <span class="faq-arrow">▸</span>
+    </button>
+    <div class="faq-answer">
+      <p>Yes — your creators, genres, watched history, and API key are all saved in your browser's storage and
+      persist across visits. They're tied to the exact page/address you load it from, so opening it a
+      different way (a different port, a different file location) will look empty until you add creators
+      there too.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question" type="button">
+      <span>Can I move my creator list to another computer or browser?</span>
+      <span class="faq-arrow">▸</span>
+    </button>
+    <div class="faq-answer">
+      <p>Yes — use the Export button next to the API key box to download a JSON file of your creators and
+      genres, then use Import on the other machine to bring them in. You'll still need to enter your own API
+      key separately on each device, since that's not included in the export.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question" type="button">
+      <span>What are Shorts, and why are they shown separately?</span>
+      <span class="faq-arrow">▸</span>
+    </button>
+    <div class="faq-answer">
+      <p>Shorts are YouTube's short-form vertical videos (generally under 3 minutes). Off Grid keeps them in
+      their own rail rather than mixed into the main feed, since they're a very different watching experience
+      — easy to endlessly scroll through, which runs a bit against the whole point of this page. Keeping them
+      separate makes that an active choice rather than something that happens by default.</p>
+    </div>
+  </div>
+
+  <p style="margin-top:40px;">
+    Have a question that isn't answered here, or a feature you'd like to see?
+    <a href="feedback.html">Send feedback →</a>
+  </p>
+</main>
+
+<script>
+  document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.parentElement.classList.toggle('open');
+    });
+  });
+</script>
+</body>
+</html>
