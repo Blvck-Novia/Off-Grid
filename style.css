@@ -76,7 +76,7 @@
   .apikey-link{ color:var(--amber); font-size:12.5px; text-decoration:none; white-space:nowrap; }
   .apikey-link:hover{ text-decoration:underline; }
   #apiKeyToggleBtn{ padding:8px 11px; }
-  .data-bar-label{ font-size:12.5px; color:var(--text-dim); margin-right:2px; }
+  .data-bar-label{ font-size:12.5px; color:var(--text-dim); margin-right:2px; white-space:nowrap; flex:0 0 auto; }
   .apikey-bar-label{ font-size:12.5px; color:var(--text-dim); font-weight:600; white-space:nowrap; }
 
   #infoBtn{ font-size:12px; }
@@ -534,19 +534,15 @@ a.brand:hover h1{ color: var(--amber); }
 #undoRemoveBtn{ margin-left:0; }
 
 
-/* ---------- Footer: one strip, same width and centre as the three sections above ---------- */
-.footer-strip{
+/* ---------- Footer: two separate boxes, original size, centred under the three sections ---------- */
+.footer-inner{
+  /* invisible wrapper: same width as the three sections above, so the pair is centred beneath them */
   max-width: calc(1600px - 2 * clamp(16px,3vw,40px));
-  margin:0 auto; padding:16px;
-  display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:14px 32px;
-  background: rgba(20,26,35,0.5); border:1px solid var(--line); border-radius:3px;
+  margin:0 auto;
+  display:flex; justify-content:center; flex-wrap:wrap; gap:12px;
 }
-.footer-strip .apikey-bar{ background:none; border:none; padding:0; max-width:none; }
-.footer-strip #apiKeyBar{ flex:1 1 560px; max-width:860px; }
-.footer-strip #dataBar{ padding-left:32px; border-left:1px solid var(--line); }
-@media (max-width: 980px){
-  .footer-strip #dataBar{ padding-left:0; border-left:none; }
-}
+.footer-inner .apikey-bar{ flex:0 1 auto; }
+.footer-inner #dataBar{ flex:0 0 auto; }   /* never squeezed, so "Your list" can't tuck under Export */
 
 /* "Get a free key" as a button */
 .apikey-getkey{
