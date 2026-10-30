@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Off Grid — Creator Feed</title>
+<title>Anti Algo — Creator Feed</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -11,7 +11,7 @@
 <div class="scanline"></div>
 <header>
   <div class="brand-block">
-    <a class="brand" href="index.html" title="Back to home"><span class="dot"></span><h1>OFF GRID</h1></a>
+    <a class="brand" href="index.html" title="Back to home"><span class="dot"></span><h1>ANTI ALGO</h1></a>
     <div class="tagline">Latest uploads from your favourite creators</div>
   </div>
   <div class="actions">
@@ -932,9 +932,9 @@ function renderVideos(){
   videosCount.textContent = list.length;
   if(channels.length === 0){
     grid.innerHTML = `<div class="welcome-panel">
-      <div class="welcome-kicker">Welcome to Off Grid</div>
+      <div class="welcome-kicker">Welcome to Anti Algo</div>
       <h2>Your feed, on your terms</h2>
-      <p>Off Grid is for people who would rather curate their own viewing than be at the mercy of the algorithm.
+      <p>Anti Algo is for people who would rather curate their own viewing than be at the mercy of the algorithm.
       Add the creators you already know and subscribe to, and see their latest uploads in the order they were posted.</p>
       <ul class="welcome-points">
         <li>Decide what you want to watch, and when. No recommendations, no autoplay, no rabbit holes.</li>
@@ -1132,7 +1132,7 @@ exportBtn.addEventListener('click', () => {
     return;
   }
   const payload = {
-    format: 'off-grid-creators',
+    format: 'anti-algo-creators',
     version: 1,
     exportedAt: new Date().toISOString(),
     channels: channels.map(ch => ({ id: ch.id, name: ch.name, genre: ch.genre || 'Uncategorised' }))
@@ -1141,12 +1141,12 @@ exportBtn.addEventListener('click', () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'off-grid-creators.json';
+  a.download = 'anti-algo-creators.json';
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
-  setStatus(`Exported ${channels.length} creator${channels.length > 1 ? 's' : ''} to off-grid-creators.json`);
+  setStatus(`Exported ${channels.length} creator${channels.length > 1 ? 's' : ''} to anti-algo-creators.json`);
 });
 
 importBtn.addEventListener('click', () => importFileInput.click());
@@ -1232,7 +1232,7 @@ const TOUR_STEPS = [
   { target:'#channelInput', placement:'bottom', title:'Step 2: add a creator',
     text:'Paste a channel\u2019s URL, their @handle or the channel ID, then press Add creator. Start with channels you already subscribe to.' },
   { target:'#genreInput', placement:'bottom', title:'Optional: choose a genre',
-    text:'Tag each creator (Gaming, Music, Tech and so on) so you can watch by mood. Leave it blank and Off Grid will suggest one from YouTube\u2019s own category data.' },
+    text:'Tag each creator (Gaming, Music, Tech and so on) so you can watch by mood. Leave it blank and Anti Algo will suggest one from YouTube\u2019s own category data.' },
   { target:'.creators-panel', placement:'right', title:'Your creators',
     preview:'<div class="tour-preview-label">Example</div><div class="mock-genre">\u25BE Gaming <span>2</span></div><div class="mock-chip on">Alice <i>\u270E \u2715</i></div><div class="mock-chip">Bob <i>\u270E \u2715</i></div><div class="mock-genre">\u25BE Music <span>1</span></div><div class="mock-chip">Cleo <i>\u270E \u2715</i></div>',
     text:'Everyone you add appears here, grouped by genre. Click a name, or a genre, to see only their videos. \u270E edits a genre, \u2715 removes someone, and Undo brings them back.' },

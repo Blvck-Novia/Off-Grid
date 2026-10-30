@@ -18,7 +18,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Feedback — Off Grid</title>
+<title>Feedback — Anti Algo</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -26,7 +26,7 @@
 <div class="scanline"></div>
 <header>
   <div class="brand-block">
-    <a class="brand" href="index.html" title="Back to home"><span class="dot"></span><h1>OFF GRID</h1></a>
+    <a class="brand" href="index.html" title="Back to home"><span class="dot"></span><h1>ANTI ALGO</h1></a>
     <div class="tagline">Latest uploads from your favourite creators</div>
   </div>
   <div class="actions">
@@ -78,7 +78,7 @@
 
 <script>
   // Replace this with your own Formspree endpoint — see the setup note at the top of this file.
-  const FORMSPREE_ENDPOINT = "https://formspree.io/f/mdeednlo";
+  const FORMSPREE_ENDPOINT = "REPLACE_ME";
 
   const form = document.getElementById('feedbackForm');
   const submitBtn = document.getElementById('fbSubmitBtn');
@@ -93,7 +93,7 @@
     if(!FORMSPREE_ENDPOINT || FORMSPREE_ENDPOINT === 'REPLACE_ME'){
       const body = encodeURIComponent(document.getElementById('fbMessage').value);
       errorBox.innerHTML = `This form isn't fully set up yet. In the meantime, you can
-        <a href="mailto:?subject=Off%20Grid%20feedback&body=${body}">email your feedback directly</a>.`;
+        <a href="mailto:?subject=Anti%20Algo%20feedback&body=${body}">email your feedback directly</a>.`;
       errorBox.style.display = 'block';
       return;
     }
