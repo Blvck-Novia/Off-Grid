@@ -136,7 +136,7 @@
 
   .layout{
     display:grid;
-    grid-template-columns: 290px minmax(0,1fr) 240px;
+    grid-template-columns: 320px minmax(0,1fr) 240px;
     gap:24px;
     align-items:start;
   }
@@ -464,7 +464,7 @@ a.brand:hover h1{ color: var(--amber); }
 .creators-panel, .feed-col, .shorts-rail{
   background: rgba(20,26,35,0.5);
   border:1px solid var(--line);
-  border-radius:14px;
+  border-radius:3px;   /* same corner as the add-creator bar */
   padding:16px 16px 12px;
 }
 
@@ -527,3 +527,8 @@ a.brand:hover h1{ color: var(--amber); }
   position:absolute; top:4px; left:4px; font-size:6.5px; font-weight:600; color:#fff;
   background: rgba(0,0,0,0.7); padding:1px 4px; border-radius:3px;
 }
+
+/* Keep the Creators heading row on one line: no wrapping inside the Filter / Undo buttons */
+.panel-title .filter-btn{ white-space:nowrap; flex:0 0 auto; padding:5px 9px; }
+.panel-title .count{ flex:0 0 auto; }
+#undoRemoveBtn{ margin-left:0; }

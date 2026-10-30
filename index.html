@@ -525,6 +525,7 @@ function toggleChannelSelection(id){
   renderChips();
   renderVideos();
   renderShorts();
+  maybeDeepLoadSelected();
 }
 
 function toggleGenreSelection(genre){
@@ -845,7 +846,11 @@ async function fetchChannelVideos(channel){
     playlistId: uploadsPlaylistId,
     maxResults: 50
   });
-  return (data.items || []).map(item => {
+  return mapPlaylistItems(data.items || [], channel);
+}
+
+function mapPlaylistItems(items, channel){
+  return items.map(item => {
     const videoId = item.contentDetails.videoId;
     const publishedRaw = item.contentDetails.videoPublishedAt || item.snippet.publishedAt;
     const publishedMs = Date.parse(publishedRaw);
@@ -863,6 +868,49 @@ async function fetchChannelVideos(channel){
       channelGenre: channel.genre || 'Uncategorised'
     };
   });
+}
+
+// A prolific creator's latest 50 uploads can be mostly Shorts, leaving only a handful of regular
+// videos in the normal load. When you pick a creator we dig further back through their uploads.
+const DEEP_PAGES = 4;                       // 4 x 50 = up to 200 uploads per selected creator
+const deepLoadedChannels = new Set();       // creators whose older uploads are already loaded
+
+async function deepLoadChannel(ch){
+  if(!apiKey || deepLoadedChannels.has(ch.id)) return;
+  deepLoadedChannels.add(ch.id);
+  setStatus(`Loading more of ${ch.name}'s uploads…`);
+  try{
+    const uploadsId = 'UU' + ch.id.slice(2);
+    let fetched = [], pageToken = '';
+    for(let page = 0; page < DEEP_PAGES; page++){
+      const params = { part: 'snippet,contentDetails', playlistId: uploadsId, maxResults: 50 };
+      if(pageToken) params.pageToken = pageToken;
+      const data = await ytFetch('playlistItems', params);
+      fetched = fetched.concat(mapPlaylistItems(data.items || [], ch));
+      pageToken = data.nextPageToken;
+      if(!pageToken) break;
+    }
+    const known = new Set(videos.concat(shorts).map(v => v.id));
+    let fresh = fetched.filter(v => !known.has(v.id));
+    if(fresh.length === 0){
+      setStatus(`That's everything from ${ch.name} that we can load.`);
+      return;
+    }
+    fresh = await annotateDurations(fresh);
+    const split = splitByShorts(fresh);
+    videos = videos.concat(split.regular).sort((a, b) => b.publishedMs - a.publishedMs);
+    shorts = shorts.concat(split.shortsOnly).sort((a, b) => b.publishedMs - a.publishedMs);
+    renderVideos();
+    renderShorts();
+    setStatus(`Loaded ${fresh.length} older upload${fresh.length > 1 ? 's' : ''} from ${ch.name}.`);
+  }catch(e){
+    deepLoadedChannels.delete(ch.id);   // allow another try
+    setStatus(e.message || `Couldn't load more of ${ch.name}'s uploads.`, true);
+  }
+}
+
+function maybeDeepLoadSelected(){
+  channels.filter(ch => selectedChannelIds.has(ch.id)).forEach(deepLoadChannel);
 }
 
 // Shorts are generally 3 minutes or under; we ask the API for each video's real
@@ -1044,6 +1092,8 @@ async function loadAllVideos(){
   } else {
     setStatus(`Updated · ${videos.length} videos from ${channels.length} creator${channels.length>1?'s':''} · ${new Date().toLocaleTimeString()}`);
   }
+  deepLoadedChannels.clear();
+  maybeDeepLoadSelected();
 }
 
 addForm.addEventListener('submit', async (e) => {
