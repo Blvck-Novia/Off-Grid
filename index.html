@@ -70,13 +70,14 @@
 </main>
 
 <footer class="apikey-footer" id="apiKeyFooter">
+ <div class="footer-strip">
   <div class="apikey-bar" id="apiKeyBar">
     <label for="apiKeyInput" class="apikey-bar-label">API Key:</label>
     <input id="apiKeyInput" type="password" placeholder="Paste your free YouTube Data API key here">
     <button type="button" id="apiKeyToggleBtn" title="Show/hide key">👁</button>
     <button type="button" id="apiKeySaveBtn">Save key</button>
-    <button type="button" id="apiKeyHelpBtn" title="How to get an API key">❓ Help</button>
-    <a class="apikey-link" href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener">Get a free key</a>
+    <a class="btn apikey-getkey" href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener" title="Opens Google Cloud Console in a new tab">Get a free key</a>
+    <button type="button" id="apiKeyHelpBtn" title="What is an API key, and how do I get one?">❓ Help</button>
   </div>
 
   <div class="apikey-bar" id="dataBar">
@@ -85,17 +86,18 @@
     <button type="button" id="importBtn">⭱ Import</button>
     <input type="file" id="importFileInput" accept=".json,application/json" hidden>
   </div>
+ </div>
 </footer>
 
 <div class="modal-overlay" id="infoModalOverlay">
   <div class="modal-box">
-    <div class="modal-title">How this works</div>
+    <div class="modal-title">How Anti Algo works</div>
     <ol class="modal-steps">
-      <li>Scroll to the <strong>bottom-left</strong> of the page and paste in a free YouTube Data API key — that's what lets this page fetch real video data from YouTube.</li>
-      <li>Don't have one? Click <strong>"Get a free key"</strong> down there, enable "YouTube Data API v3" in Google Cloud Console, then create an API key. No billing needed.</li>
-      <li>Use the box at the top to add creators by URL, @handle, or channel ID — tag a genre or leave it blank to auto-detect one.</li>
-      <li>Your creators, genres, and key are all saved in this browser, so they'll be here next time.</li>
-      <li>Opened this file directly (double-clicked it)? Videos will open on YouTube in a new tab instead of the pop-up player — YouTube blocks its embedded player from pages loaded that way.</li>
+      <li><strong>Get a free YouTube API key.</strong> It's a one-off job that takes about five minutes, and it's what lets this site fetch videos from YouTube for you. Press <strong>Help</strong> in the box at the bottom of the page and it will walk you through it.</li>
+      <li><strong>Paste your key</strong> into the <strong>API Key</strong> box and press <strong>Save key</strong>.</li>
+      <li><strong>Add creators you already follow.</strong> Paste a channel's link or @handle into the box at the top and press <strong>Add creator</strong>. Give them a genre if you like, or leave it blank and one is suggested for you.</li>
+      <li><strong>Watch.</strong> Their latest videos appear newest first. Click a video to play it, or click a creator's name (or a genre) to see just those.</li>
+      <li><strong>It's all saved</strong> in your browser, so it will be here next time. No account needed.</li>
     </ol>
     <button type="button" class="btn-primary" id="infoTourBtn">Take the guided tour</button>
     <button type="button" id="infoTakeMeThereBtn">Take me to the API key box</button>
@@ -104,18 +106,28 @@
 </div>
 
 <div class="modal-overlay" id="apiHelpModalOverlay">
-  <div class="modal-box">
-    <div class="modal-title">Getting a free YouTube API key</div>
+  <div class="modal-box modal-box-wide">
+    <div class="modal-title">What's an API key, and why do I need one?</div>
+    <p class="modal-text">YouTube lets other websites ask it for information, such as "what are this creator's newest videos?", through something called an <strong>API</strong>. Think of it as a service hatch: this site places the order, and YouTube hands over the answer.</p>
+    <p class="modal-text">An <strong>API key</strong> is your personal pass for using that hatch. It's what lets this site fetch the feed of the creators <em>you</em> choose. Without one, YouTube won't answer, so your feed would stay empty.</p>
+    <ul class="modal-facts">
+      <li><strong>It's free.</strong> No payment details are needed, and the free allowance is far more than you'll use.</li>
+      <li><strong>It's private.</strong> Your key is saved only in your own browser. Nobody else can see or use it.</li>
+      <li><strong>It's read-only.</strong> It can only look up public YouTube information. It can't post, comment or touch your account.</li>
+    </ul>
+
+    <div class="modal-subtitle">How to get yours (about five minutes)</div>
     <ol class="modal-steps">
-      <li>Go to <strong>console.cloud.google.com</strong> and sign in with any Google account.</li>
-      <li>Create a new project — the name doesn't matter, anything works.</li>
-      <li>Use the search bar at the top and search for <strong>"YouTube Data API v3"</strong>, open it, and click <strong>Enable</strong>.</li>
-      <li>Go to <strong>APIs &amp; Services → Credentials → Create Credentials → API key</strong>. Google will generate a key — copy it.</li>
-      <li>Click <strong>Edit API key</strong> to set restrictions (recommended, not required): under "Application restrictions" choose <strong>None</strong>, and under "API restrictions" choose <strong>Restrict key</strong> and select just <strong>YouTube Data API v3</strong>. Save.</li>
-      <li>Paste the key into the box below and hit <strong>Save key</strong>. That's it — no billing setup needed, and the free daily quota is far more than enough for personal use.</li>
+      <li>Open <strong>Google Cloud Console</strong> (the button below) and sign in with any Google account.</li>
+      <li>Click the project picker at the top and create a <strong>New project</strong>. The name doesn't matter, so anything works.</li>
+      <li>Use the search bar at the top, search for <strong>"YouTube Data API v3"</strong>, open it and click <strong>Enable</strong>.</li>
+      <li>Go to <strong>APIs &amp; Services → Credentials → Create credentials → API key</strong>. Google will show your key. Copy it.</li>
+      <li>Recommended, but not required: click <strong>Edit API key</strong>. Under "Application restrictions" choose <strong>None</strong>, and under "API restrictions" choose <strong>Restrict key</strong> and tick just <strong>YouTube Data API v3</strong>. Save.</li>
+      <li>Come back to this page, paste the key into the <strong>API Key</strong> box at the bottom and press <strong>Save key</strong>.</li>
     </ol>
+    <p class="modal-text">That's it. Add a few creators and your feed will appear. Stuck on a step? Tell us on the Feedback page and we'll help.</p>
     <button type="button" class="btn-primary" id="apiHelpCloseBtn">Got it</button>
-    <a class="apikey-link" href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener" style="margin-left:12px;">Open Google Cloud Console →</a>
+    <a class="btn apikey-getkey" href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener" style="margin-left:8px;">Open Google Cloud Console</a>
   </div>
 </div>
 
