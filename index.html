@@ -135,6 +135,7 @@
   <div class="tour-arrow" id="tourArrow"></div>
   <div class="tour-title" id="tourTitle"></div>
   <div class="tour-text" id="tourText"></div>
+  <div class="tour-preview" id="tourPreview" style="display:none;"></div>
   <div class="tour-footer">
     <span class="tour-count" id="tourCount"></span>
     <button type="button" class="tour-skip" id="tourSkipBtn">Skip</button>
@@ -652,7 +653,7 @@ function buildEditRow(ch){
 
 function renderShorts(){
   shortsScroll.innerHTML = '';
-  const list = shorts.filter(v => matchesSelection(v));
+  const list = shorts.filter(v => matchesSelection(v)).slice(0, 30);
   shortsCount.textContent = list.length;
   if(shorts.length === 0){
     shortsScroll.innerHTML = '<div class="panel-empty">No Shorts found.</div>';
@@ -798,6 +799,24 @@ function guessGenreFromTopics(topicCategories){
   return cleaned[0] ? titleCase(cleaned[0]) : '';
 }
 
+function pickChannelThumb(thumbs){
+  const t = thumbs || {};
+  return (t.high || t.medium || t.default || {}).url || '';
+}
+
+// Creators added before pictures were stored (or imported from a file) get theirs fetched on demand.
+const thumbLookupTried = new Set();
+async function ensureChannelThumb(ch){
+  if(ch.thumb || !apiKey || thumbLookupTried.has(ch.id)) return false;
+  thumbLookupTried.add(ch.id);
+  try{
+    const data = await ytFetch('channels', { part: 'snippet', id: ch.id });
+    const url = pickChannelThumb(data.items && data.items[0] && data.items[0].snippet.thumbnails);
+    if(url){ ch.thumb = url; await saveChannels(); return true; }
+  }catch(e){ /* the card still works without a picture */ }
+  return false;
+}
+
 async function resolveChannel(input){
   const params = input.type === 'id'
     ? { part: 'snippet,topicDetails', id: input.value }
@@ -811,6 +830,7 @@ async function resolveChannel(input){
   return {
     id: item.id,
     name: item.snippet.title,
+    thumb: pickChannelThumb(item.snippet.thumbnails),
     suggestedGenre: guessGenreFromTopics(topicCategories)
   };
 }
@@ -888,9 +908,27 @@ function renderSkeletons(n=8){
   }
 }
 
+function renderChannelCard(ch){
+  const url = 'https://www.youtube.com/channel/' + encodeURIComponent(ch.id);
+  const initial = escapeHtml((ch.name || '?').trim().charAt(0).toUpperCase());
+  const img = ch.thumb ? `<img src="${escapeHtml(ch.thumb)}" alt="">` : initial;
+  grid.innerHTML = `<a class="channel-card" href="${url}" target="_blank" rel="noopener" title="Open ${escapeHtml(ch.name)} on YouTube">
+    <div class="channel-card-img">${img}</div>
+    <div class="channel-card-name">${escapeHtml(ch.name)}</div>
+    <div class="channel-card-hint">No recent videos to show here.</div>
+    <div class="channel-card-link">Open their channel on YouTube ↗</div>
+  </a>`;
+  if(!ch.thumb){
+    ensureChannelThumb(ch).then(found => {
+      // only redraw if that same creator is still the only one selected and still has nothing to show
+      if(found && selectedChannelIds.size === 1 && selectedChannelIds.has(ch.id)) renderVideos();
+    });
+  }
+}
+
 function renderVideos(){
   grid.innerHTML = '';
-  const list = videos.filter(v => matchesSelection(v));
+  const list = videos.filter(v => matchesSelection(v)).slice(0, 60);
   videosCount.textContent = list.length;
   if(channels.length === 0){
     grid.innerHTML = `<div class="welcome-panel">
@@ -909,6 +947,13 @@ function renderVideos(){
     const welcomeStartBtn = document.getElementById('welcomeStartBtn');
     if(welcomeStartBtn) welcomeStartBtn.onclick = startTour;
     return;
+  }
+  if(list.length === 0 && selectedChannelIds.size === 1 && selectedGenres.size === 0){
+    const ch = channels.find(c => selectedChannelIds.has(c.id));
+    if(ch){
+      renderChannelCard(ch);
+      return;
+    }
   }
   if(videos.length === 0){
     grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
@@ -989,8 +1034,8 @@ async function loadAllVideos(){
     return;
   }
   const { regular, shortsOnly } = splitByShorts(all);
-  videos = regular.slice(0, 60);
-  shorts = shortsOnly.slice(0, 30);
+  videos = regular;      // the 60 / 30 display caps are applied when rendering, after filtering
+  shorts = shortsOnly;
   renderVideos();
   renderShorts();
   refreshBtn.disabled = false;
@@ -1189,12 +1234,15 @@ const TOUR_STEPS = [
   { target:'#genreInput', placement:'bottom', title:'Optional: choose a genre',
     text:'Tag each creator (Gaming, Music, Tech and so on) so you can watch by mood. Leave it blank and Off Grid will suggest one from YouTube\u2019s own category data.' },
   { target:'.creators-panel', placement:'right', title:'Your creators',
+    preview:'<div class="tour-preview-label">Example</div><div class="mock-genre">\u25BE Gaming <span>2</span></div><div class="mock-chip on">Alice <i>\u270E \u2715</i></div><div class="mock-chip">Bob <i>\u270E \u2715</i></div><div class="mock-genre">\u25BE Music <span>1</span></div><div class="mock-chip">Cleo <i>\u270E \u2715</i></div>',
     text:'Everyone you add appears here, grouped by genre. Click a name, or a genre, to see only their videos. \u270E edits a genre, \u2715 removes someone, and Undo brings them back.' },
   { target:'#genreFilterBtn', placement:'bottom', title:'Filter by genre',
     text:'Use Filter to hide whole genres in one go, handy when you only fancy a certain kind of video.' },
   { target:'.feed-col', placement:'inside', title:'Your feed',
+    preview:'<div class="tour-preview-label">Example</div><div class="mock-row"><div class="mock-card"><div class="mock-thumb"></div><div class="mock-line w80"></div><div class="mock-line dim w50"></div></div><div class="mock-card"><div class="mock-thumb watched"><span>Just watched</span></div><div class="mock-line w70"></div><div class="mock-line dim w40"></div></div><div class="mock-card"><div class="mock-thumb"></div><div class="mock-line w80"></div><div class="mock-line dim w50"></div></div></div>',
     text:'The latest videos from your creators, newest first. Click one to watch it in a pop-up. Anything you have watched is marked \u201CJust watched\u201D, so you can keep track.' },
   { target:'.shorts-rail', placement:'left', title:'Shorts, kept separate',
+    preview:'<div class="tour-preview-label">Example</div><div class="mock-row" style="padding:0 18%;"><div class="mock-short"><div class="mock-thumb"><b>Short</b></div><div class="mock-line w80"></div></div><div class="mock-short"><div class="mock-thumb"><b>Short</b></div><div class="mock-line w70"></div></div></div>',
     text:'Short-form videos get their own rail, so scrolling through them is a choice rather than the default.' },
   { target:'#dataBar', placement:'top', title:'Back up or move your list',
     text:'Export saves your creators and genres to a file, and Import loads them on another device. Your API key isn\u2019t included, so enter it separately on each device.' },
@@ -1208,6 +1256,7 @@ const tourBubble = document.getElementById('tourBubble');
 const tourArrow = document.getElementById('tourArrow');
 const tourTitle = document.getElementById('tourTitle');
 const tourText = document.getElementById('tourText');
+const tourPreview = document.getElementById('tourPreview');
 const tourCount = document.getElementById('tourCount');
 const tourSkipBtn = document.getElementById('tourSkipBtn');
 const tourBackBtn = document.getElementById('tourBackBtn');
@@ -1235,6 +1284,8 @@ function showTourStep(){
   const step = TOUR_STEPS[tourIndex];
   tourTitle.textContent = step.title;
   tourText.textContent = step.text;
+  tourPreview.innerHTML = step.preview || '';   // our own fixed mock-ups, not user data
+  tourPreview.style.display = step.preview ? 'block' : 'none';
   tourCount.textContent = `${tourIndex + 1} / ${TOUR_STEPS.length}`;
   tourBackBtn.style.visibility = tourIndex === 0 ? 'hidden' : 'visible';
   tourNextBtn.textContent = tourIndex === TOUR_STEPS.length - 1 ? 'Done' : 'Next';

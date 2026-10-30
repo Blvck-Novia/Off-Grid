@@ -136,7 +136,7 @@
 
   .layout{
     display:grid;
-    grid-template-columns: 260px minmax(0,1fr) 200px;
+    grid-template-columns: 290px minmax(0,1fr) 240px;
     gap:24px;
     align-items:start;
   }
@@ -144,7 +144,7 @@
   .panel-title{
     font-family: var(--font-body); font-size:16px; font-weight:700;
     color: var(--text); margin-bottom:14px; display:flex; align-items:center; gap:8px;
-    position: relative; min-height:34px; /* same height for all three headings so the text lines up */
+    position: relative; min-height:48px; padding-bottom:12px; border-bottom:1px solid var(--line); /* same height for all three headings so the text lines up */
   }
   .panel-title .count{
     background: var(--panel-2); color:var(--text-dim); border-radius:10px; padding:1px 8px; font-size:12px; font-weight:500;
@@ -458,3 +458,72 @@ a.brand:hover h1{ color: var(--amber); }
 .tour-arrow.down{ bottom:-8px; border-left:none; border-top:none; }
 .tour-arrow.left{ left:-8px; border-top:none; border-right:none; }
 .tour-arrow.right{ right:-8px; border-bottom:none; border-left:none; }
+
+
+/* ---------- Soft outlines so the three feeds read as separate sections ---------- */
+.creators-panel, .feed-col, .shorts-rail{
+  background: rgba(20,26,35,0.5);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:16px 16px 12px;
+}
+
+/* ---------- Channel card (selected creator with nothing in the feed) ---------- */
+.channel-card{
+  grid-column:1/-1; justify-self:center; display:flex; flex-direction:column; align-items:center; gap:10px;
+  width:250px; padding:22px 16px; margin-top:24px; text-align:center; text-decoration:none;
+  background: var(--panel); border:1px solid var(--line); border-radius:14px;
+  transition: border-color .15s ease, transform .15s ease;
+}
+.channel-card:hover{ border-color: var(--amber-dim); transform: translateY(-2px); }
+.channel-card-img{
+  width:160px; height:160px; border-radius:14px; overflow:hidden; background: var(--panel-2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:64px; font-weight:700; color: var(--amber);
+}
+.channel-card-img img{ width:100%; height:100%; object-fit:cover; display:block; }
+.channel-card-name{ font-size:16px; font-weight:700; color: var(--text); }
+.channel-card-hint{ font-size:12.5px; line-height:1.5; color: var(--text-dim); }
+.channel-card-link{ font-size:12.5px; color: var(--amber); }
+.channel-card:hover .channel-card-link{ text-decoration:underline; }
+
+/* ---------- Example pictures inside the tour bubbles ---------- */
+.tour-preview{
+  position:relative; margin:0 0 14px; padding:22px 10px 10px; border:1px dashed var(--line);
+  border-radius:8px; background: rgba(12,16,22,0.6);
+}
+.tour-preview-label{
+  position:absolute; top:5px; left:10px; font-family: var(--font-mono); font-size:9.5px;
+  letter-spacing:1px; text-transform:uppercase; color: var(--text-dim);
+}
+.mock-genre{
+  display:flex; align-items:center; gap:6px; margin:4px 0 2px; font-family: var(--font-mono);
+  font-size:9.5px; letter-spacing:1px; text-transform:uppercase; color: var(--amber);
+}
+.mock-genre span{ background: var(--panel-2); color: var(--text-dim); border-radius:8px; padding:0 6px; }
+.mock-chip{
+  display:flex; justify-content:space-between; align-items:center; margin-left:12px; padding:3px 6px;
+  border-radius:5px; font-size:11px; color: var(--text);
+}
+.mock-chip.on{ background: rgba(255,178,56,0.12); border:1px solid var(--amber-dim); color: var(--amber); }
+.mock-chip i{ font-style:normal; color: var(--text-dim); font-size:10px; letter-spacing:2px; }
+.mock-row{ display:flex; gap:8px; }
+.mock-card{ flex:1; min-width:0; }
+.mock-thumb{
+  position:relative; aspect-ratio:16/9; border-radius:5px; overflow:hidden;
+  background: linear-gradient(135deg,#2a3341,#1b2330);
+}
+.mock-thumb.watched{ background: linear-gradient(135deg,#171d27,#10151c); }
+.mock-thumb.watched span{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:7.5px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:#fff;
+}
+.mock-line{ height:4px; border-radius:2px; background: var(--text-dim); margin-top:5px; opacity:.8; }
+.mock-line.dim{ opacity:.4; height:3px; }
+.mock-line.w80{ width:80%; } .mock-line.w70{ width:70%; } .mock-line.w50{ width:50%; } .mock-line.w40{ width:40%; }
+.mock-short{ flex:1; min-width:0; }
+.mock-short .mock-thumb{ aspect-ratio:9/16; }
+.mock-short .mock-thumb b{
+  position:absolute; top:4px; left:4px; font-size:6.5px; font-weight:600; color:#fff;
+  background: rgba(0,0,0,0.7); padding:1px 4px; border-radius:3px;
+}
