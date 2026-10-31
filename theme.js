@@ -4,16 +4,19 @@
 (function(){
   var KEY = 'site_theme';
   var THEMES = [
-    { id:'default', name:'Default', colors:['#0c1016', '#ffb238'] },
-    { id:'girly',   name:'Girly',   colors:['#271622', '#ff7eb8'] },
-    { id:'gamer',   name:'Gamer',   colors:['#070709', '#ff3b3b'] },
-    { id:'fantasy', name:'Fantasy', colors:['#1e1636', '#c9a2ff'] },
-    { id:'car',     name:'Car',     colors:['#0d1727', '#3db8ff'] }
+    { id:'default',   name:'Original',  colors:['#0c1016', '#ffb238'] },
+    { id:'bubblegum', name:'Bubblegum', colors:['#121014', '#ff5fa8'] },
+    { id:'rouge',     name:'Rouge',     colors:['#111115', '#ff3b3b'] },
+    { id:'amethyst',  name:'Amethyst',  colors:['#1e1636', '#c9a2ff'] },
+    { id:'azure',     name:'Azure',     colors:['#0d1727', '#3db8ff'] },
+    { id:'forest',    name:'Forest',    colors:['#0e1a13', '#4ade80'] }
   ];
+  // Themes were renamed; anyone who already saved an old name keeps their colours
+  var LEGACY = { girly:'bubblegum', gamer:'rouge', fantasy:'amethyst', car:'azure' };
 
   function validId(id){ return THEMES.some(function(t){ return t.id === id; }); }
   function getSaved(){
-    try{ var v = localStorage.getItem(KEY); return validId(v) ? v : 'default'; }catch(e){ return 'default'; }
+    try{ var v = localStorage.getItem(KEY); v = LEGACY[v] || v; return validId(v) ? v : 'default'; }catch(e){ return 'default'; }
   }
   function apply(id){
     if(id === 'default') document.documentElement.removeAttribute('data-theme');

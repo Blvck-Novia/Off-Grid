@@ -591,33 +591,41 @@ a.brand:hover h1{ color: var(--amber); }
    COLOUR THEMES  (Default = the :root values above)
    Each theme just re-defines the same set of variables.
    ===================================================================== */
-:root[data-theme="girly"]{
-  --ink:#1a0e16; --panel:#271622; --panel-2:#351f2e; --line:#55324a;
-  --text:#ffeef6; --text-dim:#cfa3bd;
-  --amber:#ff7eb8; --amber-dim:#8f3f69; --amber-hover:#ff9ccb; --accent-2:#ffb3d5;
-  --live:#ff4fa3; --on-accent:#2a0a1a; --placeholder:#7d5a70;
-  --amber-rgb:255,126,184; --live-rgb:255,79,163; --ink-rgb:26,14,22; --panel-rgb:39,22,34; --shade-rgb:14,6,11;
+:root[data-theme="bubblegum"]{
+  --ink:#08060a; --panel:#121014; --panel-2:#1c191f; --line:#302a33;
+  --text:#f6f3f5; --text-dim:#a69ca4;
+  --amber:#ff5fa8; --amber-dim:#8a2b5c; --amber-hover:#ff82bd; --accent-2:#ff8ec4;
+  --live:#ff3d9a; --on-accent:#1a0010; --placeholder:#5e545b;
+  --amber-rgb:255,95,168; --live-rgb:255,61,154; --ink-rgb:8,6,10; --panel-rgb:18,16,20; --shade-rgb:3,2,4;
 }
-:root[data-theme="gamer"]{
+:root[data-theme="rouge"]{
   --ink:#070709; --panel:#111115; --panel-2:#1b1b21; --line:#2e2e38;
   --text:#f4f4f6; --text-dim:#9d9da8;
   --amber:#ff3b3b; --amber-dim:#8a1f1f; --amber-hover:#ff6161; --accent-2:#ff5a5a;
   --live:#ff1f3d; --on-accent:#1a0000; --placeholder:#5a5a66;
   --amber-rgb:255,59,59; --live-rgb:255,31,61; --ink-rgb:7,7,9; --panel-rgb:17,17,21; --shade-rgb:2,2,3;
 }
-:root[data-theme="fantasy"]{
+:root[data-theme="amethyst"]{
   --ink:#140f24; --panel:#1e1636; --panel-2:#2a1f4a; --line:#43376f;
   --text:#f5f0ff; --text-dim:#b9acdd;
   --amber:#c9a2ff; --amber-dim:#6b4f9e; --amber-hover:#dcbfff; --accent-2:#ff9ad5;
   --live:#ff8fd6; --on-accent:#1e0f3a; --placeholder:#6d6194;
   --amber-rgb:201,162,255; --live-rgb:255,143,214; --ink-rgb:20,15,36; --panel-rgb:30,22,54; --shade-rgb:8,5,18;
 }
-:root[data-theme="car"]{
+:root[data-theme="azure"]{
   --ink:#070d18; --panel:#0d1727; --panel-2:#142238; --line:#223a5c;
   --text:#e8f2ff; --text-dim:#8aa6c9;
   --amber:#3db8ff; --amber-dim:#1d5c8a; --amber-hover:#6accff; --accent-2:#9ad8ff;
   --live:#00d4ff; --on-accent:#04121f; --placeholder:#4a6285;
   --amber-rgb:61,184,255; --live-rgb:0,212,255; --ink-rgb:7,13,24; --panel-rgb:13,23,39; --shade-rgb:3,6,12;
+}
+
+:root[data-theme="forest"]{
+  --ink:#07100b; --panel:#0e1a13; --panel-2:#15261c; --line:#25402f;
+  --text:#eaf5ee; --text-dim:#8fb09b;
+  --amber:#4ade80; --amber-dim:#1f6b3e; --amber-hover:#7ceea3; --accent-2:#a7e8b8;
+  --live:#2ee59d; --on-accent:#04150a; --placeholder:#4a6a57;
+  --amber-rgb:74,222,128; --live-rgb:46,229,157; --ink-rgb:7,16,11; --panel-rgb:14,26,19; --shade-rgb:3,8,5;
 }
 
 /* ---------- Theme picker (injected by theme.js) ---------- */
