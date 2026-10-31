@@ -1,4 +1,7 @@
 :root{
+    --col-left:320px;
+    --col-right:240px;
+    --col-gap:24px;
     --ink:#0c1016;
     --panel:#141a23;
     --panel-2:#1b2330;
@@ -136,8 +139,8 @@
 
   .layout{
     display:grid;
-    grid-template-columns: 320px minmax(0,1fr) 240px;
-    gap:24px;
+    grid-template-columns: var(--col-left) minmax(0,1fr) var(--col-right);
+    gap:var(--col-gap);
     align-items:start;
   }
 
@@ -534,15 +537,24 @@ a.brand:hover h1{ color: var(--amber); }
 #undoRemoveBtn{ margin-left:0; }
 
 
-/* ---------- Footer: two separate boxes, original size, centred under the three sections ---------- */
+/* ---------- Footer: two separate boxes, centred under the middle (Videos) section ---------- */
 .footer-inner{
-  /* invisible wrapper: same width as the three sections above, so the pair is centred beneath them */
+  display:grid;
+  grid-template-columns: var(--col-left) minmax(0,1fr) var(--col-right);
+  column-gap: var(--col-gap);
   max-width: calc(1600px - 2 * clamp(16px,3vw,40px));
   margin:0 auto;
-  display:flex; justify-content:center; flex-wrap:wrap; gap:12px;
 }
-.footer-inner .apikey-bar{ flex:0 1 auto; }
-.footer-inner #dataBar{ flex:0 0 auto; }   /* never squeezed, so "Your list" can't tuck under Export */
+.footer-mid{
+  grid-column:2;                       /* the middle column, same as the Videos section */
+  display:flex; justify-content:center; flex-wrap:nowrap; gap:12px;
+}
+.footer-mid > .apikey-bar{ flex:0 0 auto; }   /* keep each box its natural size; any overflow spreads evenly either side */
+/* Not enough room for three columns: centre the pair on the page and let it wrap */
+@media (max-width: 1180px){
+  .footer-inner{ grid-template-columns: 1fr; }
+  .footer-mid{ grid-column:1; flex-wrap:wrap; }
+}
 
 /* "Get a free key" as a button */
 .apikey-getkey{

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anti Algo — Creator Feed</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 <div class="scanline"></div>
@@ -70,7 +70,8 @@
 </main>
 
 <footer class="apikey-footer" id="apiKeyFooter">
- <div class="footer-inner" style="display:flex; justify-content:center; flex-wrap:wrap; align-items:stretch; gap:12px; max-width:calc(1600px - 2 * clamp(16px,3vw,40px)); margin:0 auto;">
+ <div class="footer-inner">
+  <div class="footer-mid" style="display:flex; justify-content:center; gap:12px;">
   <div class="apikey-bar" id="apiKeyBar">
     <label for="apiKeyInput" class="apikey-bar-label">API Key:</label>
     <input id="apiKeyInput" type="password" placeholder="Paste your free YouTube Data API key here">
@@ -80,11 +81,12 @@
     <button type="button" id="apiKeyHelpBtn" title="What is an API key, and how do I get one?">❓ Help</button>
   </div>
 
-  <div class="apikey-bar" id="dataBar" style="flex:0 0 auto;">
+  <div class="apikey-bar" id="dataBar">
     <span class="data-bar-label">Your list</span>
     <button type="button" id="exportBtn">⭳ Export</button>
     <button type="button" id="importBtn">⭱ Import</button>
     <input type="file" id="importFileInput" accept=".json,application/json" hidden>
+  </div>
   </div>
  </div>
 </footer>
