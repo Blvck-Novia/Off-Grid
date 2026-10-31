@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anti Algo — Creator Feed</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
+<script src="theme.js?v=1"></script>
 </head>
 <body>
 <div class="scanline"></div>
@@ -1308,6 +1309,8 @@ const TOUR_STEPS = [
   { target:'.shorts-rail', placement:'left', title:'Shorts, kept separate',
     preview:'<div class="tour-preview-label">Example</div><div class="mock-row" style="padding:0 18%;"><div class="mock-short"><div class="mock-thumb"><b>Short</b></div><div class="mock-line w80"></div></div><div class="mock-short"><div class="mock-thumb"><b>Short</b></div><div class="mock-line w70"></div></div></div>',
     text:'Short-form videos get their own rail, so scrolling through them is a choice rather than the default.' },
+  { target:'#themeBtn', placement:'bottom', title:'Make it yours',
+    text:'Pick a colour theme: Default, Girly, Gamer, Fantasy or Car. Your choice is remembered for next time.' },
   { target:'#dataBar', placement:'top', title:'Back up or move your list',
     text:'Export saves your creators and genres to a file, and Import loads them on another device. Your API key isn\u2019t included, so enter it separately on each device.' },
   { target:null, title:'You\u2019re all set!',
@@ -1327,8 +1330,10 @@ const tourBackBtn = document.getElementById('tourBackBtn');
 const tourNextBtn = document.getElementById('tourNextBtn');
 let tourActive = false;
 let tourIndex = 0;
+let tourSteps = TOUR_STEPS;   // the steps whose target actually exists on this page
 
 function startTour(){
+  tourSteps = TOUR_STEPS.filter(s => !s.target || document.querySelector(s.target));
   tourActive = true;
   tourIndex = 0;
   tourBlocker.classList.add('active');
@@ -1338,21 +1343,21 @@ function startTour(){
 function endTour(){
   tourActive = false;
   tourBlocker.classList.remove('active');
-  tourBlocker.style.background = '';
+  tourBlocker.classList.remove('dim');
   tourSpot.style.display = 'none';
   tourBubble.style.display = 'none';
   window.scrollTo({ top: 0 });
 }
 
 function showTourStep(){
-  const step = TOUR_STEPS[tourIndex];
+  const step = tourSteps[tourIndex];
   tourTitle.textContent = step.title;
   tourText.textContent = step.text;
   tourPreview.innerHTML = step.preview || '';   // our own fixed mock-ups, not user data
   tourPreview.style.display = step.preview ? 'block' : 'none';
-  tourCount.textContent = `${tourIndex + 1} / ${TOUR_STEPS.length}`;
+  tourCount.textContent = `${tourIndex + 1} / ${tourSteps.length}`;
   tourBackBtn.style.visibility = tourIndex === 0 ? 'hidden' : 'visible';
-  tourNextBtn.textContent = tourIndex === TOUR_STEPS.length - 1 ? 'Done' : 'Next';
+  tourNextBtn.textContent = tourIndex === tourSteps.length - 1 ? 'Done' : 'Next';
   tourBubble.style.display = 'block';
   tourBubble.style.visibility = 'hidden';
   const el = step.target ? document.querySelector(step.target) : null;
@@ -1362,7 +1367,7 @@ function showTourStep(){
 
 function positionTour(){
   if(!tourActive) return;
-  const step = TOUR_STEPS[tourIndex];
+  const step = tourSteps[tourIndex];
   const el = step.target ? document.querySelector(step.target) : null;
   const vw = window.innerWidth, vh = window.innerHeight, m = 12, gap = 16;
   const bw = tourBubble.offsetWidth, bh = tourBubble.offsetHeight;
@@ -1374,11 +1379,11 @@ function positionTour(){
   if(!el){
     // Final step: no target, so dim the whole page and centre the bubble
     tourSpot.style.display = 'none';
-    tourBlocker.style.background = 'rgba(5,8,12,0.8)';
+    tourBlocker.classList.add('dim');
     x = (vw - bw) / 2;
     y = (vh - bh) / 2;
   } else {
-    tourBlocker.style.background = 'transparent';
+    tourBlocker.classList.remove('dim');
     const r = el.getBoundingClientRect();
     const pad = 6;
     rect = { left: r.left - pad, top: r.top - pad, width: r.width + pad * 2, height: r.height + pad * 2 };
@@ -1431,7 +1436,7 @@ function positionTour(){
 }
 
 tourNextBtn.addEventListener('click', () => {
-  if(tourIndex >= TOUR_STEPS.length - 1){ endTour(); return; }
+  if(tourIndex >= tourSteps.length - 1){ endTour(); return; }
   tourIndex++;
   showTourStep();
 });
