@@ -20,8 +20,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Feedback — Anti Algo</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=10">
-<script src="theme.js?v=3"></script>
+<link rel="stylesheet" href="style.css?v=11">
+<script src="theme.js?v=4"></script>
 </head>
 <body>
 <div class="scanline"></div>
@@ -37,20 +37,20 @@
 <main class="content-page">
   <h2 style="margin-top:0;">Got thoughts?</h2>
   <p>
-    Found a bug, have an idea for a feature, or just want to say something? This goes straight to me —
-    no account needed. Please fill in every field, including your email, so I can reply if needed.
+    Found a bug, have an idea for a feature, or just want to say something? This goes straight to our team —
+    no account needed. Please fill in every field, including your email, so we can reply if needed.
   </p>
 
   <form class="feedback-form" id="feedbackForm">
-    <label for="fbName" class="required">Name
+    <label for="fbName">Name<span class="req" aria-hidden="true">*</span>
       <input type="text" id="fbName" name="name" placeholder="Your name" autocomplete="name" required>
     </label>
 
-    <label for="fbEmail" class="required">Email <small>(so I can reply)</small>
+    <label for="fbEmail">Email<span class="req" aria-hidden="true">*</span> <small>(so we can reply)</small>
       <input type="email" id="fbEmail" name="email" placeholder="you@example.com" autocomplete="email" required>
     </label>
 
-    <label for="fbType" class="required">What's this about?
+    <label for="fbType">What's this about?<span class="req" aria-hidden="true">*</span>
       <select id="fbType" name="type" required>
         <option value="General feedback">General feedback</option>
         <option value="Bug report">Bug report</option>
@@ -59,7 +59,7 @@
       </select>
     </label>
 
-    <label for="fbMessage" class="required">Message
+    <label for="fbMessage">Message<span class="req" aria-hidden="true">*</span>
       <textarea id="fbMessage" name="message" rows="6" placeholder="What's on your mind?" required></textarea>
     </label>
 

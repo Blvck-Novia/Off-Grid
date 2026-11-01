@@ -58,6 +58,9 @@
 
     var themeOpts = [];
     function refresh(){
+      var cur = THEMES.filter(function(t){ return t.id === current; })[0] || THEMES[0];
+      menu.style.setProperty('--theme-icon-a', cur.colors[0]);
+      menu.style.setProperty('--theme-icon-b', cur.colors[1]);
       themeOpts.forEach(function(o){
         var on = o.dataset.theme === current;
         o.classList.toggle('selected', on);
@@ -72,10 +75,15 @@
       tbtn.type = 'button';
       tbtn.id = 'themeBtn';
       tbtn.className = 'menu-link menu-theme-toggle';
-      tbtn.innerHTML = '<span class="theme-icon" aria-hidden="true"></span><span>Theme</span><span class="menu-caret">\u25B8</span>';
+      tbtn.innerHTML = '<span class="theme-icon" aria-hidden="true"></span><span>Theme</span><span class="menu-caret">\u25C2</span>';
+      var item = document.createElement('div');
+      item.className = 'theme-item';
       var list = document.createElement('div');
       list.className = 'theme-list';
-      list.setAttribute('role', 'radiogroup');
+      var inner = document.createElement('div');
+      inner.className = 'theme-list-inner';
+      inner.setAttribute('role', 'radiogroup');
+      list.appendChild(inner);
       THEMES.forEach(function(t){
         var opt = document.createElement('button');
         opt.type = 'button';
@@ -96,15 +104,15 @@
           current = t.id; apply(current); save(current); refresh();
         });
         themeOpts.push(opt);
-        list.appendChild(opt);
+        inner.appendChild(opt);
       });
       tbtn.addEventListener('click', function(e){
         e.stopPropagation();
-        var open = list.classList.toggle('open');
-        tbtn.classList.toggle('open', open);
+        item.classList.toggle('open');   // tap support for touch screens; mouse users just hover
       });
-      menu.appendChild(tbtn);
-      menu.appendChild(list);
+      item.appendChild(tbtn);
+      item.appendChild(list);
+      menu.appendChild(item);
     }
 
     menu.appendChild(link('faq.html', 'FAQ', page === 'faq.html'));

@@ -1,6 +1,6 @@
 :root{
     --col-left:320px;
-    --col-right:240px;
+    --col-right:320px;
     --col-gap:24px;
     --ink:#0c1016;
     --panel:#141a23;
@@ -398,7 +398,7 @@
   font-weight:400; resize:vertical;
 }
 .feedback-form input::placeholder, .feedback-form textarea::placeholder{ color: var(--placeholder); }
-.feedback-form .required::after{ content:" *"; color:var(--amber); }
+.feedback-form .req{ color:var(--amber); margin-left:1px; }
 .feedback-form small{ font-weight:400; color:var(--text-dim); font-size:12px; }
 .feedback-note{
   background: rgba(var(--amber-rgb),0.08); border:1px solid var(--amber-dim); border-radius:8px;
@@ -636,15 +636,24 @@ a.brand:hover h1{ color: var(--amber); }
 }
 .menu-link:hover{ background: var(--panel-2); color: var(--text); border-color:transparent; }
 .menu-link.active{ color: var(--amber); }
-.menu-caret{ margin-left:auto; color: var(--text-dim); transition: transform .15s ease; }
-.menu-theme-toggle.open .menu-caret{ transform: rotate(90deg); }
+.menu-caret{ margin-left:auto; color: var(--text-dim); }
+
 /* half-circle theme icon */
 .theme-icon{
-  width:14px; height:14px; border-radius:50%; border:1.5px solid currentColor; flex:0 0 auto;
-  background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+  width:16px; height:16px; border-radius:50%; border:1.5px solid var(--text-dim); flex:0 0 auto;
+  background: linear-gradient(135deg, var(--theme-icon-a, #0c1016) 50%, var(--theme-icon-b, #ffb238) 50%);
 }
-.theme-list{ display:none; padding:2px 0 4px 14px; }
-.theme-list.open{ display:block; }
+.theme-item{ position:relative; }
+.theme-list{
+  display:none; position:absolute; right:100%; top:-7px; padding-right:6px;   /* padding bridges the gap so hover isn't lost */
+}
+.theme-list-inner{
+  background: var(--panel); border:1px solid var(--line); border-radius:8px;
+  padding:6px; min-width:180px; box-shadow:0 12px 32px rgba(0,0,0,0.5);
+}
+.theme-item:hover > .theme-list, .theme-item:focus-within > .theme-list, .theme-item.open > .theme-list{ display:block; }
+.theme-item:hover > .menu-theme-toggle{ background: var(--panel-2); }
+@media (max-width:700px){ .theme-list{ right:0; top:100%; padding:4px 0 0; position:static; } .theme-list-inner{ box-shadow:none; border:none; padding:0 0 0 14px; } }
 .theme-option{
   display:flex; align-items:center; gap:10px; width:100%; text-align:left;
   background:transparent; border:none; color: var(--text); border-radius:5px;
@@ -680,3 +689,5 @@ a.brand:hover h1{ color: var(--amber); }
 .tour-panel{ display:none; position:fixed; z-index:200; }
 .tour-panel.active{ display:block; }
 .tour-hint{ font-size:12px; font-style:italic; color: var(--accent-2); margin:-6px 0 12px; }
+
+.info-i{ font-family: Georgia, "Times New Roman", serif; font-style:italic; font-weight:700; font-size:15px; margin-right:2px; }
