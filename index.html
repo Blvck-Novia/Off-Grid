@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anti Algo — Creator Feed</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=8">
+<link rel="stylesheet" href="style.css?v=9">
 <script src="theme.js?v=2"></script>
 </head>
 <body>
@@ -76,7 +76,7 @@
   <div class="footer-mid" style="display:flex; justify-content:center; gap:12px;">
   <div class="apikey-bar" id="apiKeyBar">
     <label for="apiKeyInput" class="apikey-bar-label">API Key:</label>
-    <input id="apiKeyInput" type="password" placeholder="Paste your free YouTube Data API key here">
+    <input id="apiKeyInput" type="password" placeholder="Paste your key here" title="Paste your free YouTube Data API key here. Not sure what that is? Press Help.">
     <button type="button" id="apiKeyToggleBtn" title="Show/hide key">👁</button>
     <button type="button" id="apiKeySaveBtn">Save key</button>
     <a class="btn apikey-getkey" href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener" title="Opens Google Cloud Console in a new tab">Get a free key</a>
@@ -146,11 +146,13 @@
 </div>
 
 <div id="tourBlocker"></div>
+<div class="tour-panel" id="tourPanelTop"></div><div class="tour-panel" id="tourPanelBottom"></div><div class="tour-panel" id="tourPanelLeft"></div><div class="tour-panel" id="tourPanelRight"></div>
 <div id="tourSpot"></div>
 <div id="tourBubble" role="dialog" aria-live="polite">
   <div class="tour-arrow" id="tourArrow"></div>
   <div class="tour-title" id="tourTitle"></div>
   <div class="tour-text" id="tourText"></div>
+  <div class="tour-hint" id="tourHint"></div>
   <div class="tour-preview" id="tourPreview" style="display:none;"></div>
   <div class="tour-footer">
     <span class="tour-count" id="tourCount"></span>
@@ -350,9 +352,10 @@ function makeQueueButton(v, opts){
   const sync = () => {
     const queued = isQueued(v.id);
     btn.classList.toggle('queued', queued && !opts.fromQueue);
-    btn.textContent = opts.fromQueue ? '\u2715 Remove' : (queued ? '\u2713 Queued' : '+ Queue');
+    btn.textContent = opts.fromQueue ? '\u2715' : (queued ? '\u2713' : '+');
     btn.title = opts.fromQueue ? 'Remove from your queue'
-      : queued ? 'In your queue. Click to remove it' : 'Save to watch later';
+      : queued ? 'In your queue. Click to remove it' : 'Save to watch later (add to queue)';
+    btn.setAttribute('aria-label', btn.title);
   };
   btn.addEventListener('click', (e) => {
     e.preventDefault();
@@ -386,7 +389,7 @@ function renderQueueView(){
   if(queue.length === 0){
     grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
       <div class="big">Your queue is empty</div>
-      <div>Press <strong>+ Queue</strong> on any video to save it here for later. You can hold up to ${QUEUE_MAX}.</div>
+      <div>Press the <strong>+</strong> on any video's thumbnail to save it here for later. You can hold up to ${QUEUE_MAX}.</div>
     </div>`;
     return;
   }
@@ -1421,24 +1424,24 @@ const TOUR_STEPS = [
     text:'This page fetches videos straight from YouTube using your own free key. Paste it here and press Save key. It stays in your browser and nobody else can see it.' },
   { target:'#apiKeyHelpBtn', placement:'top', title:'Never made a key before?',
     text:'Press Help for a step-by-step walkthrough. It takes a few minutes and costs nothing.' },
-  { target:'#channelInput', placement:'bottom', title:'Step 2: add a creator',
-    text:'Paste a channel\u2019s URL, their @handle or the channel ID, then press Add creator. Start with channels you already subscribe to.' },
-  { target:'#genreInput', placement:'bottom', title:'Optional: choose a genre',
-    text:'Tag each creator (Gaming, Music, Tech and so on) so you can watch by mood. Leave it blank and Anti Algo will suggest one from YouTube\u2019s own category data.' },
+  { target:'#addForm', placement:'bottom', title:'Step 2: add a creator',
+    text:'Paste a channel\u2019s URL, their @handle or the channel ID, pick a genre if you like (leave it blank and one is suggested), then press Add creator. Start with channels you already subscribe to.' },
   { target:'.creators-panel', placement:'right', title:'Your creators',
     preview:'<div class="tour-preview-label">Example</div><div class="mock-genre">\u25BE Gaming <span>2</span></div><div class="mock-chip on">Alice <i>\u270E \u2715</i></div><div class="mock-chip">Bob <i>\u270E \u2715</i></div><div class="mock-genre">\u25BE Music <span>1</span></div><div class="mock-chip">Cleo <i>\u270E \u2715</i></div>',
     text:'Everyone you add appears here, grouped by genre. Click a name, or a genre, to see only their videos. \u270E edits a genre, \u2715 removes someone, and Undo brings them back.' },
   { target:'#genreFilterBtn', placement:'bottom', title:'Filter by genre',
+    interactive:false,
     text:'Use Filter to hide whole genres in one go, handy when you only fancy a certain kind of video.' },
   { target:'.feed-col', placement:'inside', title:'Your feed',
     preview:'<div class="tour-preview-label">Example</div><div class="mock-row"><div class="mock-card"><div class="mock-thumb"></div><div class="mock-line w80"></div><div class="mock-line dim w50"></div></div><div class="mock-card"><div class="mock-thumb watched"><span>Just watched</span></div><div class="mock-line w70"></div><div class="mock-line dim w40"></div></div><div class="mock-card"><div class="mock-thumb"></div><div class="mock-line w80"></div><div class="mock-line dim w50"></div></div></div>',
     text:'The latest videos from your creators, newest first. Click one to watch it in a pop-up. Anything you have watched is marked \u201CJust watched\u201D, so you can keep track.' },
   { target:'#queueToggleBtn', placement:'bottom', title:'Save videos for later',
-    text:'Press + Queue on any video to save it, then open Queue here to watch them when you are ready. It holds up to 12, and watching one removes it.' },
+    text:'Press the + in the corner of any video\u2019s thumbnail to save it, then open Queue here to watch them when you are ready. It holds up to 12, and watching one removes it.' },
   { target:'.shorts-rail', placement:'left', title:'Shorts, kept separate',
     preview:'<div class="tour-preview-label">Example</div><div class="mock-row" style="padding:0 18%;"><div class="mock-short"><div class="mock-thumb"><b>Short</b></div><div class="mock-line w80"></div></div><div class="mock-short"><div class="mock-thumb"><b>Short</b></div><div class="mock-line w70"></div></div></div>',
     text:'Short-form videos get their own rail, so scrolling through them is a choice rather than the default.' },
   { target:'#themeBtn', placement:'bottom', title:'Make it yours',
+    interactive:false,
     text:'Pick a colour theme: Original, Bubblegum, Rouge, Amethyst, Azure or Forest. Your choice is remembered for next time.' },
   { target:'#dataBar', placement:'top', title:'Back up or move your list',
     text:'Export saves your creators and genres to a file, and Import loads them on another device. Your API key isn\u2019t included, so enter it separately on each device.' },
@@ -1457,6 +1460,9 @@ const tourCount = document.getElementById('tourCount');
 const tourSkipBtn = document.getElementById('tourSkipBtn');
 const tourBackBtn = document.getElementById('tourBackBtn');
 const tourNextBtn = document.getElementById('tourNextBtn');
+const tourHint = document.getElementById('tourHint');
+const tourPanels = ['Top','Bottom','Left','Right'].map(n => document.getElementById('tourPanel' + n));
+let tourTimer = null;
 let tourActive = false;
 let tourIndex = 0;
 let tourSteps = TOUR_STEPS;   // the steps whose target actually exists on this page
@@ -1467,10 +1473,14 @@ function startTour(){
   tourIndex = 0;
   tourBlocker.classList.add('active');
   showTourStep();
+  clearInterval(tourTimer);
+  tourTimer = setInterval(positionTour, 300);   // keep the spotlight on its target while you click around
 }
 
 function endTour(){
   tourActive = false;
+  clearInterval(tourTimer);
+  tourPanels.forEach(p => p.classList.remove('active'));
   tourBlocker.classList.remove('active');
   tourBlocker.classList.remove('dim');
   tourSpot.style.display = 'none';
@@ -1482,6 +1492,11 @@ function showTourStep(){
   const step = tourSteps[tourIndex];
   tourTitle.textContent = step.title;
   tourText.textContent = step.text;
+  if(!step.target) tourHint.textContent = '';
+  else tourHint.textContent = step.interactive === false
+    ? 'Have a go once the tour is finished.'
+    : 'The highlighted part is live, so go ahead and try it.';
+  tourHint.style.display = tourHint.textContent ? 'block' : 'none';
   tourPreview.innerHTML = step.preview || '';   // our own fixed mock-ups, not user data
   tourPreview.style.display = step.preview ? 'block' : 'none';
   tourCount.textContent = `${tourIndex + 1} / ${tourSteps.length}`;
@@ -1492,6 +1507,28 @@ function showTourStep(){
   const el = step.target ? document.querySelector(step.target) : null;
   if(el && el.scrollIntoView) el.scrollIntoView({ block: 'center', inline: 'nearest' });
   requestAnimationFrame(positionTour);
+}
+
+// Blocks clicks on everything except the highlighted area, so people can follow along without wandering off.
+function setTourBlockMode(mode, hole){
+  if(mode === 'panels' && hole){
+    tourBlocker.classList.remove('active');
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const L = Math.max(0, hole.left), T = Math.max(0, hole.top);
+    const R = Math.min(vw, hole.right), B = Math.min(vh, hole.bottom);
+    const place = (el, l, t, w, h) => {
+      el.style.left = l + 'px'; el.style.top = t + 'px';
+      el.style.width = Math.max(0, w) + 'px'; el.style.height = Math.max(0, h) + 'px';
+      el.classList.add('active');
+    };
+    place(tourPanels[0], 0, 0, vw, T);
+    place(tourPanels[1], 0, B, vw, vh - B);
+    place(tourPanels[2], 0, T, L, B - T);
+    place(tourPanels[3], R, T, vw - R, B - T);
+  } else {
+    tourPanels.forEach(p => p.classList.remove('active'));
+    tourBlocker.classList.add('active');
+  }
 }
 
 function positionTour(){
@@ -1509,6 +1546,7 @@ function positionTour(){
     // Final step: no target, so dim the whole page and centre the bubble
     tourSpot.style.display = 'none';
     tourBlocker.classList.add('dim');
+    setTourBlockMode('full');
     x = (vw - bw) / 2;
     y = (vh - bh) / 2;
   } else {
@@ -1523,6 +1561,8 @@ function positionTour(){
     tourSpot.style.top = rect.top + 'px';
     tourSpot.style.width = rect.width + 'px';
     tourSpot.style.height = rect.height + 'px';
+    if(step.interactive === false) setTourBlockMode('full');
+    else setTourBlockMode('panels', rect);
 
     const fits = {
       top:    rect.top >= bh + gap + m,
@@ -1577,10 +1617,9 @@ window.addEventListener('resize', positionTour);
 window.addEventListener('scroll', positionTour, true);
 document.addEventListener('keydown', (e) => {
   if(!tourActive) return;
+  if(document.querySelector('.modal-overlay.open')) return;   // Escape closes the dialog first, not the tour
   if(e.key === 'Escape') endTour();
-  else if(e.key === 'ArrowRight'){ e.preventDefault(); tourNextBtn.click(); }
-  else if(e.key === 'ArrowLeft') tourBackBtn.click();
-});
+}, true);   // capture phase: runs before the dialog's own Escape handler has closed it
 
 const infoTourBtn = document.getElementById('infoTourBtn');
 infoTourBtn.addEventListener('click', () => {
