@@ -1,6 +1,6 @@
 :root{
     --col-left:320px;
-    --col-right:320px;
+    --col-right:240px;
     --col-gap:24px;
     --ink:#0c1016;
     --panel:#141a23;
@@ -651,7 +651,7 @@ a.brand:hover h1{ color: var(--amber); }
   background: var(--panel); border:1px solid var(--line); border-radius:8px;
   padding:6px; min-width:180px; box-shadow:0 12px 32px rgba(0,0,0,0.5);
 }
-.theme-item:hover > .theme-list, .theme-item:focus-within > .theme-list, .theme-item.open > .theme-list{ display:block; }
+.theme-item:hover > .theme-list, .theme-item:has(:focus-visible) > .theme-list, .theme-item.open > .theme-list{ display:block; }
 .theme-item:hover > .menu-theme-toggle{ background: var(--panel-2); }
 @media (max-width:700px){ .theme-list{ right:0; top:100%; padding:4px 0 0; position:static; } .theme-list-inner{ box-shadow:none; border:none; padding:0 0 0 14px; } }
 .theme-option{
@@ -672,11 +672,19 @@ a.brand:hover h1{ color: var(--amber); }
   position:absolute; bottom:8px; right:8px; z-index:2;
   width:28px; height:28px; padding:0; border-radius:50%;
   display:flex; align-items:center; justify-content:center;
-  font-size:17px; line-height:1; letter-spacing:0;
-  background: rgba(var(--ink-rgb), 0.82); color: var(--amber);
-  border:1px solid rgba(var(--amber-rgb), 0.55);
+  font-size:14px; line-height:1; letter-spacing:0;
+  background: rgba(var(--ink-rgb), 0.45); color: rgba(255,255,255,0.85);
+  border:none; opacity:0.7; transition: opacity .15s ease, background .15s ease;
 }
-.queue-btn:hover, .queue-btn.queued{ background: var(--amber); color: var(--on-accent); border-color: var(--amber); }
+.queue-btn:hover, .queue-btn.queued{ opacity:1; background: var(--amber); color: var(--on-accent); }
+/* the plus is drawn with two bars so it sits exactly in the middle of the circle */
+.queue-btn.plus{ position:absolute; font-size:0; }
+.queue-btn.plus::before, .queue-btn.plus::after{
+  content:""; position:absolute; left:50%; top:50%; background: currentColor; border-radius:1px;
+  transform: translate(-50%,-50%);
+}
+.queue-btn.plus::before{ width:12px; height:2px; }
+.queue-btn.plus::after{ width:2px; height:12px; }
 #queueToggleBtn{ text-transform:none; letter-spacing:0; font-size:12px; }
 #queueToggleBtn.has-items{ color: var(--amber); border-color: var(--amber-dim); }
 .panel-title.queue-mode .solo-badge{ display:none !important; }
@@ -690,4 +698,4 @@ a.brand:hover h1{ color: var(--amber); }
 .tour-panel.active{ display:block; }
 .tour-hint{ font-size:12px; font-style:italic; color: var(--accent-2); margin:-6px 0 12px; }
 
-.info-i{ font-family: Georgia, "Times New Roman", serif; font-style:italic; font-weight:700; font-size:15px; margin-right:2px; }
+.info-i{ display:inline-block; width:10px; height:15px; vertical-align:-2px; margin-right:3px; }

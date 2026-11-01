@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anti Algo — Creator Feed</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=11">
-<script src="theme.js?v=4"></script>
+<link rel="stylesheet" href="style.css?v=12">
+<script src="theme.js?v=5"></script>
 </head>
 <body>
 <div class="scanline"></div>
@@ -16,7 +16,7 @@
     <div class="tagline">Latest uploads from your favourite creators</div>
   </div>
   <div class="actions">
-    <button id="infoBtn" title="How to use"><span class="info-i">i</span> Info</button>
+    <button id="infoBtn" title="How to use"><svg class="info-i" viewBox="0 0 10 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.2 5.6 C3.6 8 3.2 10.2 3.4 11.6 C3.6 12.9 4.8 13 6 11.9"/><circle cx="5.4" cy="2.4" r="0.6" fill="currentColor"/></svg> Info</button>
     <button id="refreshBtn">↻ Refresh</button>
   </div>
 </header>
@@ -347,7 +347,9 @@ function makeQueueButton(v, opts){
   const sync = () => {
     const queued = isQueued(v.id);
     btn.classList.toggle('queued', queued && !opts.fromQueue);
-    btn.textContent = opts.fromQueue ? '\u2715' : (queued ? '\u2713' : '+');
+    const plain = !opts.fromQueue && !queued;
+    btn.classList.toggle('plus', plain);
+    btn.textContent = opts.fromQueue ? '\u2715' : (queued ? '\u2713' : '');
     btn.title = opts.fromQueue ? 'Remove from your queue'
       : queued ? 'In your queue. Click to remove it' : 'Save to watch later (add to queue)';
     btn.setAttribute('aria-label', btn.title);

@@ -47,7 +47,7 @@
     var menu = document.createElement('div');
     menu.className = 'site-menu';
 
-    function closeMenu(){ menu.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+    function closeMenu(){ menu.classList.remove('open'); var ti = menu.querySelector('.theme-item'); if(ti) ti.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
 
     function link(href, text, active){
       var a = document.createElement('a');
@@ -110,6 +110,7 @@
         e.stopPropagation();
         item.classList.toggle('open');   // tap support for touch screens; mouse users just hover
       });
+      item.addEventListener('mouseleave', function(){ item.classList.remove('open'); });
       item.appendChild(tbtn);
       item.appendChild(list);
       menu.appendChild(item);

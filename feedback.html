@@ -1,7 +1,7 @@
 <!--
   SETUP NOTE FOR THE SITE OWNER (not shown to visitors):
   This form submits to Formspree (https://formspree.io), a free service that emails you
-  form submissions from a static site — no backend needed. To make it live:
+  form submissions from a static site, with no backend needed. To make it live:
 
     1. Go to formspree.io and sign up free (no credit card; free tier covers 50
        submissions/month, plenty for personal feedback).
@@ -11,17 +11,17 @@
        and paste your endpoint URL in place of "REPLACE_ME".
 
   Until you do that, the form will show a friendly error and fall back to a mailto: link,
-  so feedback is never silently lost — it just won't reach you automatically.
+  so feedback is never silently lost, it just won't reach you automatically.
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Feedback — Anti Algo</title>
+<title>Feedback | Anti Algo</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=11">
-<script src="theme.js?v=4"></script>
+<link rel="stylesheet" href="style.css?v=12">
+<script src="theme.js?v=5"></script>
 </head>
 <body>
 <div class="scanline"></div>
@@ -37,8 +37,8 @@
 <main class="content-page">
   <h2 style="margin-top:0;">Got thoughts?</h2>
   <p>
-    Found a bug, have an idea for a feature, or just want to say something? This goes straight to our team —
-    no account needed. Please fill in every field, including your email, so we can reply if needed.
+    Found a bug, have an idea for a feature, or just want to say something? This goes straight to our team, and
+    no account is needed. Please fill in every field, including your email, so we can reply if needed.
   </p>
 
   <form class="feedback-form" id="feedbackForm">
@@ -67,13 +67,13 @@
       <button type="submit" class="btn-primary" id="fbSubmitBtn">Send feedback</button>
     </div>
 
-    <div class="feedback-success" id="fbSuccess">Thanks — your feedback has been sent!</div>
+    <div class="feedback-success" id="fbSuccess">Thanks, your feedback has been sent!</div>
     <div class="status-line error" id="fbError" style="display:none;"></div>
   </form>
 </main>
 
 <script>
-  // Replace this with your own Formspree endpoint — see the setup note at the top of this file.
+  // Replace this with your own Formspree endpoint (see the setup note at the top of this file).
   const FORMSPREE_ENDPOINT = "REPLACE_ME";
 
   const form = document.getElementById('feedbackForm');
