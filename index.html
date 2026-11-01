@@ -484,7 +484,7 @@ function renderQueueView(){
   }
   const bar = document.createElement('div');
   bar.className = 'queue-bar';
-  bar.innerHTML = `<span>${queue.length} of ${QUEUE_MAX} saved. Watching one removes it from the queue.</span>`;
+  bar.innerHTML = `<span>${queue.length} of ${QUEUE_MAX} saved. Remove videos yourself with the \u2715.</span>`;
   const clearBtn = document.createElement('button');
   clearBtn.type = 'button';
   clearBtn.textContent = 'Clear all';
@@ -896,10 +896,6 @@ function buildShortCard(v, opts){
   a.addEventListener('click', (e) => {
     markVideoWatched(v.id);
     markThumbAsWatched(a.querySelector('.short-thumb'));
-    if(opts.fromQueue){                           // watched it, so it frees up a queue slot
-      removeFromShortsQueue(v.id);
-      setTimeout(renderShorts, 0);
-    }
     if(!canEmbedVideos) return; // fall back to normal new-tab navigation
     if(e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return; // let it open in a new tab as usual
     e.preventDefault();
@@ -1284,10 +1280,6 @@ function buildVideoCard(v, opts){
     link.addEventListener('click', (e) => {
       markVideoWatched(v.id);
       markThumbAsWatched(card.querySelector('.thumb-wrap'));
-      if(opts.fromQueue){                         // watched it, so it frees up a queue slot
-        removeFromQueue(v.id);
-        setTimeout(renderQueueView, 0);           // redraw after the click has finished doing its work
-      }
       if(!canEmbedVideos) return; // fall back to normal new-tab navigation
       if(e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return; // let it open in a new tab as usual
       e.preventDefault();
@@ -1434,13 +1426,54 @@ apiHelpModalOverlay.addEventListener('click', (e) => {
   if(e.target === apiHelpModalOverlay) apiHelpModalOverlay.classList.remove('open');
 });
 
+// ---- Resume where you left off ----
+// The pop-up player reports its position; we remember it per video and start from there next time.
+const POSITIONS_KEY = 'video_positions';
+const POSITIONS_CAP = 300;
+let videoPositions = {};
+let currentVideoId = null;
+let currentVideoTime = 0;
+let currentVideoEnded = false;
+
+async function loadVideoPositions(){
+  try{ const raw = await persistGet(POSITIONS_KEY); videoPositions = raw ? JSON.parse(raw) : {}; }
+  catch(e){ videoPositions = {}; }
+}
+function saveCurrentPosition(){
+  if(!currentVideoId) return;
+  if(currentVideoEnded || currentVideoTime < 5) delete videoPositions[currentVideoId];
+  else videoPositions[currentVideoId] = Math.floor(currentVideoTime);
+  const ids = Object.keys(videoPositions);
+  if(ids.length > POSITIONS_CAP) ids.slice(0, ids.length - POSITIONS_CAP).forEach(id => delete videoPositions[id]);
+  try{ persistSet(POSITIONS_KEY, JSON.stringify(videoPositions)); }catch(e){ /* storage unavailable */ }
+}
+window.addEventListener('message', (e) => {
+  if(!currentVideoId || !/^https:\/\/www\.youtube(-nocookie)?\.com$/.test(e.origin)) return;
+  let data = e.data;
+  try{ if(typeof data === 'string') data = JSON.parse(data); }catch(_){ return; }
+  if(!data || !data.info) return;
+  if(typeof data.info.currentTime === 'number') currentVideoTime = data.info.currentTime;
+  if(data.info.playerState === 0) currentVideoEnded = true;
+  else if(data.info.playerState === 1) currentVideoEnded = false;
+});
+videoModalIframe.addEventListener('load', () => {
+  if(!currentVideoId) return;
+  try{ videoModalIframe.contentWindow.postMessage(JSON.stringify({ event:'listening', id:1, channel:'widget' }), '*'); }catch(e){}
+});
+
 function openVideoModal(videoId, isVertical){
   videoModalBox.classList.toggle('vertical', !!isVertical);
-  videoModalIframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&vq=hd1080`;
+  currentVideoId = videoId;
+  currentVideoTime = videoPositions[videoId] || 0;
+  currentVideoEnded = false;
+  const start = videoPositions[videoId] ? `&start=${videoPositions[videoId]}` : '';
+  videoModalIframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&vq=hd1080&enablejsapi=1&origin=${encodeURIComponent(location.origin)}${start}`;
   videoModalFallbackLink.href = `https://www.youtube.com/watch?v=${videoId}`;
   videoModalOverlay.classList.add('open');
 }
 function closeVideoModal(){
+  saveCurrentPosition();
+  currentVideoId = null;
   videoModalOverlay.classList.remove('open');
   videoModalIframe.src = ''; // stop playback
 }
@@ -1571,7 +1604,7 @@ const TOUR_STEPS = [
     preview:'<div class="tour-preview-label">Example</div><div class="mock-row"><div class="mock-card"><div class="mock-thumb"></div><div class="mock-line w80"></div><div class="mock-line dim w50"></div></div><div class="mock-card"><div class="mock-thumb watched"><span>Just watched</span></div><div class="mock-line w70"></div><div class="mock-line dim w40"></div></div><div class="mock-card"><div class="mock-thumb"></div><div class="mock-line w80"></div><div class="mock-line dim w50"></div></div></div>',
     text:'The latest videos from your creators, newest first. Click one to watch it in a pop-up. Anything you have watched is marked \u201CJust watched\u201D, so you can keep track.' },
   { target:'#queueToggleBtn', placement:'bottom', title:'Save videos for later',
-    text:'Press the + in the corner of any video\u2019s thumbnail to save it, then open Queue here to watch them when you are ready. It holds up to 12, and watching one removes it.' },
+    text:'Press the + in the corner of any video\u2019s thumbnail to save it, then open Queue here to watch them when you are ready. It holds up to 12, and videos stay until you remove them with the \u2715.' },
   { target:'.shorts-rail', placement:'left', title:'Shorts, kept separate',
     preview:'<div class="tour-preview-label">Example</div><div class="mock-row" style="padding:0 18%;"><div class="mock-short"><div class="mock-thumb"><b>Short</b></div><div class="mock-line w80"></div></div><div class="mock-short"><div class="mock-thumb"><b>Short</b></div><div class="mock-line w70"></div></div></div>',
     text:'Short-form videos get their own rail, so scrolling through them is a choice rather than the default.' },
@@ -1768,6 +1801,7 @@ infoTourBtn.addEventListener('click', () => {
   await loadWatchedVideos();
   await loadQueue();
   await loadShortsQueue();
+  await loadVideoPositions();
   updateQueueToggle();
   updateShortsQueueToggle();
   renderChips();
