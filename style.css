@@ -645,3 +645,21 @@ a.brand:hover h1{ color: var(--amber); }
 .theme-option .theme-check{ margin-left:auto; color: var(--amber); visibility:hidden; }
 .theme-option.selected .theme-check{ visibility:visible; }
 .theme-swatch{ width:18px; height:18px; border-radius:50%; border:1px solid var(--line); flex:0 0 auto; }
+
+
+/* ---------- Watch-later queue ---------- */
+.thumb-box{ position:relative; }
+.queue-btn{
+  position:absolute; top:8px; right:8px; z-index:2;
+  font-size:10.5px; padding:5px 10px; border-radius:14px;
+  background: rgba(var(--ink-rgb), 0.82); color: var(--amber);
+  border:1px solid rgba(var(--amber-rgb), 0.55);
+}
+.queue-btn:hover, .queue-btn.queued{ background: var(--amber); color: var(--on-accent); border-color: var(--amber); }
+#queueToggleBtn.has-items{ color: var(--amber); border-color: var(--amber-dim); }
+.panel-title.queue-mode .solo-badge{ display:none !important; }
+#soloBadgeName{ display:inline-block; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:bottom; }
+.queue-bar{
+  grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; gap:12px;
+  font-size:12.5px; color: var(--text-dim);
+}

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anti Algo — Creator Feed</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="style.css?v=8">
 <script src="theme.js?v=2"></script>
 </head>
 <body>
@@ -50,12 +50,13 @@
     </aside>
 
     <section class="feed-col">
-      <div class="panel-title">
-        Videos <span class="count" id="videosCount">0</span>
+      <div class="panel-title" id="feedHeading">
+        <span id="feedTitle">Videos</span> <span class="count" id="videosCount">0</span>
         <span class="solo-badge" id="soloBadge" style="display:none;">
           Only: <span id="soloBadgeName"></span>
           <button type="button" id="soloClearBtn" title="Show all creators">✕</button>
         </span>
+        <button type="button" id="queueToggleBtn" class="filter-btn" title="Your watch-later queue">▶ Queue 0/12</button>
       </div>
       <div id="statusLine" class="status-line"></div>
       <div class="feed-scroll">
@@ -296,6 +297,121 @@ function saveChannels(){
   });
   return saveQueue;
 }
+
+
+// ---------- Watch-later queue ----------
+const QUEUE_STORAGE_KEY = 'watch_queue';
+const QUEUE_MAX = 12;
+let queue = [];            // oldest first
+let queueViewActive = false;
+let queueSaveChain = Promise.resolve();
+
+async function loadQueue(){
+  try{
+    const raw = await persistGet(QUEUE_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    queue = Array.isArray(parsed) ? parsed.filter(v => v && v.id).slice(0, QUEUE_MAX) : [];
+  }catch(e){ queue = []; }
+}
+function persistWatchQueue(){
+  queueSaveChain = queueSaveChain.then(async () => {
+    try{ await persistSet(QUEUE_STORAGE_KEY, JSON.stringify(queue)); }
+    catch(e){ console.error('Could not save the queue', e); }
+  });
+  return queueSaveChain;
+}
+function isQueued(id){ return queue.some(v => v.id === id); }
+
+function addToQueue(v){
+  if(isQueued(v.id)) return true;
+  if(queue.length >= QUEUE_MAX){
+    setStatus(`Your queue is full (${QUEUE_MAX} videos). Remove one to add another.`, true);
+    return false;
+  }
+  queue.push({
+    id: v.id, title: v.title, url: v.url, thumb: v.thumb, published: v.published, publishedMs: v.publishedMs,
+    channelId: v.channelId, channelName: v.channelName, channelGenre: v.channelGenre
+  });
+  persistWatchQueue();
+  updateQueueToggle();
+  return true;
+}
+function removeFromQueue(id){
+  const before = queue.length;
+  queue = queue.filter(v => v.id !== id);
+  if(queue.length !== before){ persistWatchQueue(); updateQueueToggle(); }
+}
+
+// "+ Queue" on a card in the feed; "✕ Remove" on a card inside the queue
+function makeQueueButton(v, opts){
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'queue-btn';
+  const sync = () => {
+    const queued = isQueued(v.id);
+    btn.classList.toggle('queued', queued && !opts.fromQueue);
+    btn.textContent = opts.fromQueue ? '\u2715 Remove' : (queued ? '\u2713 Queued' : '+ Queue');
+    btn.title = opts.fromQueue ? 'Remove from your queue'
+      : queued ? 'In your queue. Click to remove it' : 'Save to watch later';
+  };
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if(isQueued(v.id)){
+      removeFromQueue(v.id);
+      if(opts.fromQueue){ renderQueueView(); return; }
+    } else if(!addToQueue(v)){
+      return;
+    }
+    sync();
+  });
+  sync();
+  return btn;
+}
+
+function updateQueueToggle(){
+  const btn = document.getElementById('queueToggleBtn');
+  if(!btn) return;
+  btn.textContent = queueViewActive ? '\u2190 Back to feed' : `\u25B6 Queue ${queue.length}/${QUEUE_MAX}`;
+  btn.classList.toggle('has-items', queue.length > 0);
+  btn.title = queueViewActive ? 'Go back to your feed' : 'Open your watch-later queue';
+  document.getElementById('feedTitle').textContent = queueViewActive ? 'Queue' : 'Videos';
+  document.getElementById('feedHeading').classList.toggle('queue-mode', queueViewActive);
+  if(queueViewActive) videosCount.textContent = queue.length;
+}
+
+function renderQueueView(){
+  grid.innerHTML = '';
+  updateQueueToggle();
+  if(queue.length === 0){
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
+      <div class="big">Your queue is empty</div>
+      <div>Press <strong>+ Queue</strong> on any video to save it here for later. You can hold up to ${QUEUE_MAX}.</div>
+    </div>`;
+    return;
+  }
+  const bar = document.createElement('div');
+  bar.className = 'queue-bar';
+  bar.innerHTML = `<span>${queue.length} of ${QUEUE_MAX} saved. Watching one removes it from the queue.</span>`;
+  const clearBtn = document.createElement('button');
+  clearBtn.type = 'button';
+  clearBtn.textContent = 'Clear all';
+  clearBtn.addEventListener('click', () => {
+    if(!window.confirm('Remove every video from your queue?')) return;
+    queue = [];
+    persistWatchQueue();
+    renderQueueView();
+  });
+  bar.appendChild(clearBtn);
+  grid.appendChild(bar);
+  queue.forEach(v => grid.appendChild(buildVideoCard(v, { fromQueue: true })));
+}
+
+document.getElementById('queueToggleBtn').addEventListener('click', () => {
+  queueViewActive = !queueViewActive;
+  updateQueueToggle();
+  renderVideos();
+});
 
 async function loadWatchedVideos(){
   try{
@@ -962,6 +1078,7 @@ function timeAgo(iso){
 }
 
 function renderSkeletons(n=8){
+  if(queueViewActive) return;
   grid.innerHTML = '';
   for(let i=0;i<n;i++){
     const s = document.createElement('div');
@@ -990,6 +1107,7 @@ function renderChannelCard(ch){
 }
 
 function renderVideos(){
+  if(queueViewActive){ renderQueueView(); return; }
   grid.innerHTML = '';
   const list = videos.filter(v => matchesSelection(v)).slice(0, 60);
   videosCount.textContent = list.length;
@@ -1032,34 +1150,43 @@ function renderVideos(){
     </div>`;
     return;
   }
-  list.forEach(v => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    const isWatched = watchedVideoIds.has(v.id);
-    card.innerHTML = `
+  list.forEach(v => grid.appendChild(buildVideoCard(v, { fromQueue: false })));
+}
+
+function buildVideoCard(v, opts){
+  const card = document.createElement('div');
+  card.className = 'card';
+  const isWatched = watchedVideoIds.has(v.id);
+  card.innerHTML = `
+    <div class="thumb-box">
       <a class="thumb-wrap${isWatched ? ' watched' : ''}" href="${v.url}" target="_blank" rel="noopener">
         <img src="${v.thumb}" alt="" loading="lazy">
         ${isWatched ? '<div class="watched-overlay">Just watched</div>' : ''}
       </a>
-      <div class="card-body">
-        <div class="card-title"><a href="${v.url}" target="_blank" rel="noopener">${escapeHtml(v.title)}</a></div>
-        <div class="card-meta">
-          <span class="chan-name">${escapeHtml(v.channelName)}</span>
-          <span class="timestamp">${timeAgo(v.published)}</span>
-        </div>
-      </div>`;
-    card.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', (e) => {
-        markVideoWatched(v.id);
-        markThumbAsWatched(card.querySelector('.thumb-wrap'));
-        if(!canEmbedVideos) return; // fall back to normal new-tab navigation
-        if(e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return; // let it open in a new tab as usual
-        e.preventDefault();
-        openVideoModal(v.id, false);
-      });
+    </div>
+    <div class="card-body">
+      <div class="card-title"><a href="${v.url}" target="_blank" rel="noopener">${escapeHtml(v.title)}</a></div>
+      <div class="card-meta">
+        <span class="chan-name">${escapeHtml(v.channelName)}</span>
+        <span class="timestamp">${timeAgo(v.published)}</span>
+      </div>
+    </div>`;
+  card.querySelector('.thumb-box').appendChild(makeQueueButton(v, opts));
+  card.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', (e) => {
+      markVideoWatched(v.id);
+      markThumbAsWatched(card.querySelector('.thumb-wrap'));
+      if(opts.fromQueue){                         // watched it, so it frees up a queue slot
+        removeFromQueue(v.id);
+        setTimeout(renderQueueView, 0);           // redraw after the click has finished doing its work
+      }
+      if(!canEmbedVideos) return; // fall back to normal new-tab navigation
+      if(e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return; // let it open in a new tab as usual
+      e.preventDefault();
+      openVideoModal(v.id, false);
     });
-    grid.appendChild(card);
   });
+  return card;
 }
 
 async function loadAllVideos(){
@@ -1306,6 +1433,8 @@ const TOUR_STEPS = [
   { target:'.feed-col', placement:'inside', title:'Your feed',
     preview:'<div class="tour-preview-label">Example</div><div class="mock-row"><div class="mock-card"><div class="mock-thumb"></div><div class="mock-line w80"></div><div class="mock-line dim w50"></div></div><div class="mock-card"><div class="mock-thumb watched"><span>Just watched</span></div><div class="mock-line w70"></div><div class="mock-line dim w40"></div></div><div class="mock-card"><div class="mock-thumb"></div><div class="mock-line w80"></div><div class="mock-line dim w50"></div></div></div>',
     text:'The latest videos from your creators, newest first. Click one to watch it in a pop-up. Anything you have watched is marked \u201CJust watched\u201D, so you can keep track.' },
+  { target:'#queueToggleBtn', placement:'bottom', title:'Save videos for later',
+    text:'Press + Queue on any video to save it, then open Queue here to watch them when you are ready. It holds up to 12, and watching one removes it.' },
   { target:'.shorts-rail', placement:'left', title:'Shorts, kept separate',
     preview:'<div class="tour-preview-label">Example</div><div class="mock-row" style="padding:0 18%;"><div class="mock-short"><div class="mock-thumb"><b>Short</b></div><div class="mock-line w80"></div></div><div class="mock-short"><div class="mock-thumb"><b>Short</b></div><div class="mock-line w70"></div></div></div>',
     text:'Short-form videos get their own rail, so scrolling through them is a choice rather than the default.' },
@@ -1463,6 +1592,8 @@ infoTourBtn.addEventListener('click', () => {
   await loadApiKey();
   await loadChannels();
   await loadWatchedVideos();
+  await loadQueue();
+  updateQueueToggle();
   renderChips();
   syncActiveGenres();
   renderFilterDropdown();
