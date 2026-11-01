@@ -77,8 +77,8 @@
     <input id="apiKeyInput" type="password" placeholder="Paste your key here" title="Paste your free YouTube Data API key here. Not sure what that is? Press Help.">
     <button type="button" id="apiKeyToggleBtn" title="Show/hide key">👁</button>
     <button type="button" id="apiKeySaveBtn">Save key</button>
-    <a class="btn apikey-getkey" href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener" title="Opens Google Cloud Console in a new tab">Get a free key</a>
     <button type="button" id="apiKeyHelpBtn" title="What is an API key, and how do I get one?">❓ Help</button>
+    <a class="btn apikey-getkey" href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener" title="Opens Google Cloud Console in a new tab">Get a free key</a>
   </div>
 
   <div class="apikey-bar" id="dataBar">
@@ -120,29 +120,36 @@
       </ul>
     </div>
     <div class="help-slide" data-slide="1">
-      <div class="modal-title">Get your key: set up <span class="help-sub">(part 1 of 2)</span></div>
+      <div class="modal-title">Get your key <span class="help-sub">(1 of 3)</span></div>
       <ol class="modal-steps">
         <li>Open <strong>Google Cloud Console</strong> (the button below) and sign in with any Google account.</li>
-        <li>Click the project picker at the top and create a <strong>New project</strong>. The name doesn't matter, so anything works.</li>
-        <li>Use the search bar at the top, type <strong>YouTube Data API v3</strong>, open it and click <strong>Enable</strong>.</li>
+        <li>Click the project picker at the top and create a <strong>New project</strong>. Any name works.</li>
+        <li>Search for <strong>YouTube Data API v3</strong> in the search bar at the top, open it and click <strong>Enable</strong>.</li>
       </ol>
     </div>
     <div class="help-slide" data-slide="2">
-      <div class="modal-title">Get your key: create it <span class="help-sub">(part 2 of 2)</span></div>
+      <div class="modal-title">Get your key <span class="help-sub">(2 of 3)</span></div>
       <ol class="modal-steps" start="4">
-        <li>Go to <strong>APIs &amp; Services → Credentials → Create credentials</strong>. Google asks <em>"Which API are you using?"</em> (<strong>YouTube Data API v3</strong> should already be selected) and <em>"What data will you be accessing?"</em>. Choose <strong>Public data</strong>, then continue.</li>
-        <li>Type any <strong>name</strong> for your key, such as "Anti Algo".</li>
-        <li>Under <strong>Select API restrictions</strong>, open the dropdown and <strong>type "YouTube Data API v3"</strong> into its search box (the list is very long otherwise). Tick that one option, then press <strong>OK</strong>.</li>
-        <li>Scroll down to <strong>Key restrictions</strong> and choose <strong>Websites</strong>. Press <strong>Add</strong> and paste this address, which locks the key to this site:
-          <span class="help-addr"><code id="helpAddr">https://your-site-address/*</code><button type="button" id="helpCopyAddr">Copy</button></span>
-          <span class="help-addr-note" id="helpAddrNote">Ignore IP addresses, Android apps and iOS apps.</span></li>
-        <li>Press <strong>Create</strong> (or <strong>Save</strong>) and <strong>copy the key</strong> Google shows you.</li>
-        <li>Come back to this page, paste the key into the <strong>API Key</strong> box at the bottom and press <strong>Save key</strong>.</li>
+        <li>Go to <strong>APIs &amp; Services → Credentials → Create credentials</strong>.</li>
+        <li>For <em>"Which API are you using?"</em> keep <strong>YouTube Data API v3</strong>. For <em>"What data will you be accessing?"</em> choose <strong>Public data</strong>, then continue.</li>
+        <li>Name the key <strong>API key</strong>.</li>
+        <li>Under <strong>Select API restrictions</strong>, search for <strong>YouTube Data API v3</strong>, tick it and press <strong>OK</strong>.</li>
       </ol>
-      <p class="modal-text">That's it. Add a few creators and your feed will appear. Stuck on a step? Tell us on the Feedback page and we'll help.</p>
+    </div>
+    <div class="help-slide" data-slide="3">
+      <div class="modal-title">Get your key <span class="help-sub">(3 of 3)</span></div>
+      <ol class="modal-steps" start="8">
+        <li>Under <strong>Key restrictions</strong>, choose <strong>Websites</strong>, press <strong>Add</strong> and paste this address:
+          <span class="help-addr"><code id="helpAddr">https://your-site-address/*</code><button type="button" id="helpCopyAddr">Copy</button></span>
+          <span class="help-addr-note" id="helpAddrNote"></span></li>
+        <li>Press <strong>Create</strong> and copy the key Google shows you.</li>
+        <li>Paste it into the <strong>API Key</strong> box at the bottom of this page and press <strong>Save key</strong>.</li>
+      </ol>
+      <p class="modal-text"><strong>Keep a copy</strong> in a password manager or notes app, so it's easy to paste on another device. If you lose it, sign in to Google Cloud Console, go to <strong>APIs &amp; Services → Credentials</strong> and open your key to see it again.</p>
+      <p class="modal-text">Stuck? Tell us on the Feedback page and we'll help.</p>
     </div>
     <div class="help-footer">
-      <div class="help-dots" id="helpDots"><span class="on"></span><span></span><span></span></div>
+      <div class="help-dots" id="helpDots"><span class="on"></span><span></span><span></span><span></span></div>
       <div class="help-actions">
         <button type="button" id="helpBackBtn" style="display:none;">Back</button>
         <a class="btn apikey-getkey" id="helpConsoleLink" href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener" style="display:none;">Open Google Cloud Console</a>
@@ -192,7 +199,7 @@ let watchedVideoIds = new Set();
 let apiKey = '';
 
 async function ytFetch(endpoint, params){
-  if(!apiKey) throw new Error('Add your YouTube API key below first (it\'s free, see "Get a free key").');
+  if(!apiKey) throw new Error('Add your YouTube API key below first (it\'s free, press Help if you need a hand).');
   const url = new URL('https://www.googleapis.com/youtube/v3/' + endpoint);
   Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
   url.searchParams.set('key', apiKey);
@@ -1392,17 +1399,17 @@ infoTakeMeThereBtn.addEventListener('click', () => {
 });
 
 let helpSlide = 0;
-const HELP_LAST = 2;
+const HELP_LAST = 3;
 (function setupHelpAddress(){
   const code = document.getElementById('helpAddr');
   const note = document.getElementById('helpAddrNote');
   const copyBtn = document.getElementById('helpCopyAddr');
   if(location.protocol === 'http:' || location.protocol === 'https:'){
     code.textContent = location.origin + '/*';
-    note.textContent = 'Ignore IP addresses, Android apps and iOS apps. If you ever visit the site at a different address (for example with or without "www"), add that one too.';
+    note.textContent = 'If you also use the site with or without "www", add that address too.';
   } else {
     code.textContent = 'https://your-site-address/*';
-    note.textContent = 'Replace this with the web address you visit this site at. If you are only opening the file on your own computer, choose None instead.';
+    note.textContent = 'Use the web address you visit this site at. If you only open the file on your own computer, choose None instead.';
   }
   copyBtn.addEventListener('click', async () => {
     try{ await navigator.clipboard.writeText(code.textContent); copyBtn.textContent = 'Copied'; }
