@@ -1,6 +1,6 @@
 /* Colour themes: shared by every page.
    Runs from <head> so the saved theme is applied before the page paints (no flash of the wrong colours),
-   then adds a "Theme" menu to the header once the page has loaded. */
+   then adds the "Menu" (FAQ, Feedback and, on the home page, Theme) to the header once the page has loaded. */
 (function(){
   var KEY = 'site_theme';
   var THEMES = [
@@ -30,64 +30,97 @@
   function buildPicker(){
     var actions = document.querySelector('header .actions');
     if(!actions) return;
+    var isHome = !!document.getElementById('infoBtn');   // themes are only changed from the home page
+    var page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
 
     var wrap = document.createElement('div');
-    wrap.className = 'theme-picker';
+    wrap.className = 'menu-wrap';
 
     var btn = document.createElement('button');
     btn.type = 'button';
-    btn.id = 'themeBtn';
-    btn.title = 'Change the colour theme';
-    btn.textContent = '\uD83C\uDFA8 Theme';
+    btn.id = 'menuBtn';
+    btn.title = 'Menu';
+    btn.setAttribute('aria-haspopup', 'true');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.textContent = '\u2630 Menu';
 
     var menu = document.createElement('div');
-    menu.className = 'theme-menu';
+    menu.className = 'site-menu';
 
+    function closeMenu(){ menu.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+
+    function link(href, text, active){
+      var a = document.createElement('a');
+      a.className = 'menu-link' + (active ? ' active' : '');
+      a.href = href; a.textContent = text;
+      return a;
+    }
+
+    var themeOpts = [];
     function refresh(){
-      menu.querySelectorAll('.theme-option').forEach(function(o){
-        o.classList.toggle('selected', o.dataset.theme === current);
+      themeOpts.forEach(function(o){
+        var on = o.dataset.theme === current;
+        o.classList.toggle('selected', on);
+        o.setAttribute('aria-checked', on ? 'true' : 'false');
       });
     }
 
-    THEMES.forEach(function(t){
-      var opt = document.createElement('button');
-      opt.type = 'button';
-      opt.className = 'theme-option';
-      opt.dataset.theme = t.id;
-      var sw = document.createElement('span');
-      sw.className = 'theme-swatch';
-      sw.style.background = 'linear-gradient(135deg, ' + t.colors[0] + ' 50%, ' + t.colors[1] + ' 50%)';
-      var label = document.createElement('span');
-      label.textContent = t.name;
-      var tick = document.createElement('span');
-      tick.className = 'theme-check';
-      tick.textContent = '\u2713';
-      opt.appendChild(sw); opt.appendChild(label); opt.appendChild(tick);
-      opt.addEventListener('click', function(){
-        current = t.id;
-        apply(current);
-        save(current);
-        refresh();
-        menu.classList.remove('open');
+    if(!isHome) menu.appendChild(link('index.html', 'Home', false));
+
+    if(isHome){
+      var tbtn = document.createElement('button');
+      tbtn.type = 'button';
+      tbtn.id = 'themeBtn';
+      tbtn.className = 'menu-link menu-theme-toggle';
+      tbtn.innerHTML = '<span class="theme-icon" aria-hidden="true"></span><span>Theme</span><span class="menu-caret">\u25B8</span>';
+      var list = document.createElement('div');
+      list.className = 'theme-list';
+      list.setAttribute('role', 'radiogroup');
+      THEMES.forEach(function(t){
+        var opt = document.createElement('button');
+        opt.type = 'button';
+        opt.className = 'theme-option';
+        opt.setAttribute('role', 'radio');
+        opt.dataset.theme = t.id;
+        var sw = document.createElement('span');
+        sw.className = 'theme-swatch';
+        sw.style.background = 'linear-gradient(135deg, ' + t.colors[0] + ' 50%, ' + t.colors[1] + ' 50%)';
+        var label = document.createElement('span');
+        label.textContent = t.name;
+        var tick = document.createElement('span');
+        tick.className = 'theme-check';
+        tick.textContent = '\u2713';
+        opt.appendChild(sw); opt.appendChild(label); opt.appendChild(tick);
+        opt.addEventListener('click', function(e){
+          e.stopPropagation();
+          current = t.id; apply(current); save(current); refresh();
+        });
+        themeOpts.push(opt);
+        list.appendChild(opt);
       });
-      menu.appendChild(opt);
-    });
+      tbtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        var open = list.classList.toggle('open');
+        tbtn.classList.toggle('open', open);
+      });
+      menu.appendChild(tbtn);
+      menu.appendChild(list);
+    }
+
+    menu.appendChild(link('faq.html', 'FAQ', page === 'faq.html'));
+    menu.appendChild(link('feedback.html', 'Feedback', page === 'feedback.html'));
 
     btn.addEventListener('click', function(e){
       e.stopPropagation();
-      menu.classList.toggle('open');
+      var open = menu.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
-    document.addEventListener('click', function(e){
-      if(!wrap.contains(e.target)) menu.classList.remove('open');
-    });
-    document.addEventListener('keydown', function(e){
-      if(e.key === 'Escape') menu.classList.remove('open');
-    });
+    document.addEventListener('click', function(e){ if(!wrap.contains(e.target)) closeMenu(); });
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeMenu(); });
 
     wrap.appendChild(btn);
     wrap.appendChild(menu);
-    var info = document.getElementById('infoBtn');
-    actions.insertBefore(wrap, info || null);   // sits just before Info on the home page, at the end elsewhere
+    actions.appendChild(wrap);
     refresh();
   }
 
