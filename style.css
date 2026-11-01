@@ -686,7 +686,8 @@ a.brand:hover h1{ color: var(--amber); }
 .queue-btn.plus::before{ width:12px; height:2px; }
 .queue-btn.plus::after{ width:2px; height:12px; }
 #queueToggleBtn{ text-transform:none; letter-spacing:0; font-size:12px; }
-#queueToggleBtn.has-items{ color: var(--amber); border-color: var(--amber-dim); }
+#shortsQueueBtn{ text-transform:none; letter-spacing:0; font-size:11.5px; }
+#shortsQueueBtn.has-items, #queueToggleBtn.has-items{ color: var(--amber); border-color: var(--amber-dim); }
 .panel-title.queue-mode .solo-badge{ display:none !important; }
 #soloBadgeName{ display:inline-block; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:bottom; }
 .queue-bar{
@@ -699,3 +700,30 @@ a.brand:hover h1{ color: var(--amber); }
 .tour-hint{ font-size:12px; font-style:italic; color: var(--accent-2); margin:-6px 0 12px; }
 
 .info-i{ display:inline-block; width:10px; height:15px; vertical-align:-2px; margin-right:3px; }
+
+/* Help dialog as a two-slide carousel */
+.help-box{ max-width:440px; padding:20px 22px; }
+.help-box .modal-title{ font-size:16px; margin-bottom:10px; }
+.help-sub{ font-size:12px; font-weight:400; color:var(--text-dim); }
+.help-box .modal-text, .help-box .modal-facts li, .help-box .modal-steps li{ font-size:13px; line-height:1.5; }
+.help-box .modal-text{ margin-bottom:8px; }
+.help-box .modal-facts{ gap:6px; margin:8px 0 0; }
+.help-box .modal-facts li{ padding:8px 10px; }
+.help-box .modal-steps{ gap:7px; margin-bottom:10px; }
+.help-slide{ display:none; }
+.help-slide.active{ display:block; }
+.help-footer{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:14px; flex-wrap:wrap; }
+.help-actions{ display:flex; gap:8px; align-items:center; margin-left:auto; flex-wrap:wrap; justify-content:flex-end; }
+.help-actions button{ margin-top:0; }
+.help-dots{ display:flex; gap:6px; }
+.help-dots span{ width:7px; height:7px; border-radius:50%; background: var(--line); }
+.help-dots span.on{ background: var(--amber); }
+
+/* queue tick, drawn so it sits in the middle of the circle */
+.queue-btn.check{ font-size:0; }
+.queue-btn.check::after{
+  content:""; position:absolute; left:50%; top:46%; width:5px; height:10px;
+  border:solid currentColor; border-width:0 2px 2px 0; border-radius:1px;
+  transform: translate(-50%,-55%) rotate(45deg);
+}
+.short-thumb .queue-btn{ bottom:8px; right:8px; }

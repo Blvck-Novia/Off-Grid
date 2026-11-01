@@ -20,8 +20,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Feedback | Anti Algo</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=12">
-<script src="theme.js?v=5"></script>
+<link rel="stylesheet" href="style.css?v=14">
+<script src="theme.js?v=7"></script>
 </head>
 <body>
 <div class="scanline"></div>
@@ -42,15 +42,15 @@
   </p>
 
   <form class="feedback-form" id="feedbackForm">
-    <label for="fbName">Name<span class="req" aria-hidden="true">*</span>
+    <label for="fbName"><span class="lbl">Name<span class="req" aria-hidden="true">*</span></span>
       <input type="text" id="fbName" name="name" placeholder="Your name" autocomplete="name" required>
     </label>
 
-    <label for="fbEmail">Email<span class="req" aria-hidden="true">*</span> <small>(so we can reply)</small>
+    <label for="fbEmail"><span class="lbl">Email<span class="req" aria-hidden="true">*</span> <small>(so we can reply)</small></span>
       <input type="email" id="fbEmail" name="email" placeholder="you@example.com" autocomplete="email" required>
     </label>
 
-    <label for="fbType">What's this about?<span class="req" aria-hidden="true">*</span>
+    <label for="fbType"><span class="lbl">What's this about?<span class="req" aria-hidden="true">*</span></span>
       <select id="fbType" name="type" required>
         <option value="General feedback">General feedback</option>
         <option value="Bug report">Bug report</option>
@@ -59,7 +59,7 @@
       </select>
     </label>
 
-    <label for="fbMessage">Message<span class="req" aria-hidden="true">*</span>
+    <label for="fbMessage"><span class="lbl">Message<span class="req" aria-hidden="true">*</span></span>
       <textarea id="fbMessage" name="message" rows="6" placeholder="What's on your mind?" required></textarea>
     </label>
 

@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anti Algo — Creator Feed</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=12">
-<script src="theme.js?v=5"></script>
+<link rel="stylesheet" href="style.css?v=14">
+<script src="theme.js?v=7"></script>
 </head>
 <body>
 <div class="scanline"></div>
@@ -60,7 +60,10 @@
     </section>
 
     <aside class="shorts-rail">
-      <div class="panel-title">Shorts <span class="count" id="shortsCount">0</span></div>
+      <div class="panel-title" id="shortsHeading">
+        <span id="shortsTitle">Shorts</span> <span class="count" id="shortsCount">0</span>
+        <button type="button" id="shortsQueueBtn" class="filter-btn" title="Your Shorts watch-later queue">▶ Queue 0/12</button>
+      </div>
       <div id="shortsScroll" class="shorts-scroll"></div>
     </aside>
   </div>
@@ -105,28 +108,38 @@
 </div>
 
 <div class="modal-overlay" id="apiHelpModalOverlay">
-  <div class="modal-box modal-box-wide">
-    <div class="modal-title">What's an API key, and why do I need one?</div>
-    <p class="modal-text">YouTube lets other websites ask it for information, such as "what are this creator's newest videos?", through something called an <strong>API</strong>. Think of it as a service hatch: this site places the order, and YouTube hands over the answer.</p>
-    <p class="modal-text">An <strong>API key</strong> is your personal pass for using that hatch. It's what lets this site fetch the feed of the creators <em>you</em> choose. Without one, YouTube won't answer, so your feed would stay empty.</p>
-    <ul class="modal-facts">
-      <li><strong>It's free.</strong> No payment details are needed, and the free allowance is far more than you'll use.</li>
-      <li><strong>It's private.</strong> Your key is saved only in your own browser. Nobody else can see or use it.</li>
-      <li><strong>It's read-only.</strong> It can only look up public YouTube information. It can't post, comment or touch your account.</li>
-    </ul>
-
-    <div class="modal-subtitle">How to get yours (about five minutes)</div>
-    <ol class="modal-steps">
-      <li>Open <strong>Google Cloud Console</strong> (the button below) and sign in with any Google account.</li>
-      <li>Click the project picker at the top and create a <strong>New project</strong>. The name doesn't matter, so anything works.</li>
-      <li>Use the search bar at the top, search for <strong>"YouTube Data API v3"</strong>, open it and click <strong>Enable</strong>.</li>
-      <li>Go to <strong>APIs &amp; Services → Credentials → Create credentials → API key</strong>. Google will show your key. Copy it.</li>
-      <li>Recommended, but not required: click <strong>Edit API key</strong>. Under "Application restrictions" choose <strong>None</strong>, and under "API restrictions" choose <strong>Restrict key</strong> and tick just <strong>YouTube Data API v3</strong>. Save.</li>
-      <li>Come back to this page, paste the key into the <strong>API Key</strong> box at the bottom and press <strong>Save key</strong>.</li>
-    </ol>
-    <p class="modal-text">That's it. Add a few creators and your feed will appear. Stuck on a step? Tell us on the Feedback page and we'll help.</p>
-    <button type="button" class="btn-primary" id="apiHelpCloseBtn">Got it</button>
-    <a class="btn apikey-getkey" href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener" style="margin-left:8px;">Open Google Cloud Console</a>
+  <div class="modal-box help-box">
+    <div class="help-slide active" data-slide="0">
+      <div class="modal-title">What's an API key, and why do I need one?</div>
+      <p class="modal-text">YouTube lets other websites ask it for information, such as "what are this creator's newest videos?", through something called an <strong>API</strong>. Think of it as a service hatch: this site places the order, and YouTube hands over the answer.</p>
+      <p class="modal-text">An <strong>API key</strong> is your personal pass for using that hatch. It's what lets this site fetch the feed of the creators <em>you</em> choose. Without one, YouTube won't answer, so your feed would stay empty.</p>
+      <ul class="modal-facts">
+        <li><strong>It's free.</strong> No payment details are needed, and the free allowance is far more than you'll use.</li>
+        <li><strong>It's private.</strong> Your key is saved only in your own browser. Nobody else can see or use it.</li>
+        <li><strong>It's read-only.</strong> It can only look up public YouTube information. It can't post, comment or touch your account.</li>
+      </ul>
+    </div>
+    <div class="help-slide" data-slide="1">
+      <div class="modal-title">How to get yours <span class="help-sub">(about five minutes)</span></div>
+      <ol class="modal-steps">
+        <li>Open <strong>Google Cloud Console</strong> (the button below) and sign in with any Google account.</li>
+        <li>Click the project picker at the top and create a <strong>New project</strong>. The name doesn't matter, so anything works.</li>
+        <li>Use the search bar at the top, search for <strong>"YouTube Data API v3"</strong>, open it and click <strong>Enable</strong>.</li>
+        <li>Go to <strong>APIs &amp; Services → Credentials → Create credentials → API key</strong>. Google will show your key. Copy it.</li>
+        <li>Recommended, but not required: click <strong>Edit API key</strong>. Under "Application restrictions" choose <strong>None</strong>, and under "API restrictions" choose <strong>Restrict key</strong> and tick just <strong>YouTube Data API v3</strong>. Save.</li>
+        <li>Come back to this page, paste the key into the <strong>API Key</strong> box at the bottom and press <strong>Save key</strong>.</li>
+      </ol>
+      <p class="modal-text">That's it. Add a few creators and your feed will appear. Stuck on a step? Tell us on the Feedback page and we'll help.</p>
+    </div>
+    <div class="help-footer">
+      <div class="help-dots" id="helpDots"><span class="on"></span><span></span></div>
+      <div class="help-actions">
+        <button type="button" id="helpBackBtn" style="display:none;">Back</button>
+        <a class="btn apikey-getkey" id="helpConsoleLink" href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener" style="display:none;">Open Google Cloud Console</a>
+        <button type="button" class="btn-primary" id="helpNextBtn">Next</button>
+        <button type="button" class="btn-primary" id="apiHelpCloseBtn" style="display:none;">Got it</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -169,7 +182,7 @@ let watchedVideoIds = new Set();
 let apiKey = '';
 
 async function ytFetch(endpoint, params){
-  if(!apiKey) throw new Error('Add your YouTube API key above first (it\'s free — see "Get a free key").');
+  if(!apiKey) throw new Error('Add your YouTube API key below first (it\'s free, see "Get a free key").');
   const url = new URL('https://www.googleapis.com/youtube/v3/' + endpoint);
   Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
   url.searchParams.set('key', apiKey);
@@ -339,17 +352,23 @@ function removeFromQueue(id){
   if(queue.length !== before){ persistWatchQueue(); updateQueueToggle(); }
 }
 
-// "+ Queue" on a card in the feed; "✕ Remove" on a card inside the queue
+// "+" on a thumbnail adds it to the queue; inside a queue view it becomes a remove button.
+// Shorts have their own separate queue (opts.short), so neither one limits the other.
 function makeQueueButton(v, opts){
+  const isQ = opts.short ? isShortQueued : isQueued;
+  const addQ = opts.short ? addToShortsQueue : addToQueue;
+  const removeQ = opts.short ? removeFromShortsQueue : removeFromQueue;
+  const redraw = opts.short ? renderShorts : renderQueueView;
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'queue-btn';
   const sync = () => {
-    const queued = isQueued(v.id);
+    const queued = isQ(v.id);
     btn.classList.toggle('queued', queued && !opts.fromQueue);
     const plain = !opts.fromQueue && !queued;
     btn.classList.toggle('plus', plain);
-    btn.textContent = opts.fromQueue ? '\u2715' : (queued ? '\u2713' : '');
+    btn.classList.toggle('check', !opts.fromQueue && queued);
+    btn.textContent = opts.fromQueue ? '\u2715' : '';
     btn.title = opts.fromQueue ? 'Remove from your queue'
       : queued ? 'In your queue. Click to remove it' : 'Save to watch later (add to queue)';
     btn.setAttribute('aria-label', btn.title);
@@ -357,10 +376,10 @@ function makeQueueButton(v, opts){
   btn.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if(isQueued(v.id)){
-      removeFromQueue(v.id);
-      if(opts.fromQueue){ renderQueueView(); return; }
-    } else if(!addToQueue(v)){
+    if(isQ(v.id)){
+      removeQ(v.id);
+      if(opts.fromQueue){ redraw(); return; }
+    } else if(!addQ(v)){
       return;
     }
     sync();
@@ -368,6 +387,62 @@ function makeQueueButton(v, opts){
   sync();
   return btn;
 }
+
+// ---------- Shorts queue (separate from the video queue) ----------
+const SHORTS_QUEUE_KEY = 'shorts_queue';
+const SHORTS_QUEUE_MAX = 12;
+let shortsQueue = [];
+let shortsQueueActive = false;
+let shortsQueueSaveChain = Promise.resolve();
+
+async function loadShortsQueue(){
+  try{
+    const raw = await persistGet(SHORTS_QUEUE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    shortsQueue = Array.isArray(parsed) ? parsed.filter(v => v && v.id).slice(0, SHORTS_QUEUE_MAX) : [];
+  }catch(e){ shortsQueue = []; }
+}
+function persistShortsQueue(){
+  shortsQueueSaveChain = shortsQueueSaveChain.then(async () => {
+    try{ await persistSet(SHORTS_QUEUE_KEY, JSON.stringify(shortsQueue)); }
+    catch(e){ console.error('Could not save the Shorts queue', e); }
+  });
+  return shortsQueueSaveChain;
+}
+function isShortQueued(id){ return shortsQueue.some(v => v.id === id); }
+function addToShortsQueue(v){
+  if(isShortQueued(v.id)) return true;
+  if(shortsQueue.length >= SHORTS_QUEUE_MAX){
+    setStatus(`Your Shorts queue is full (${SHORTS_QUEUE_MAX}). Remove one to add another.`, true);
+    return false;
+  }
+  shortsQueue.push({
+    id: v.id, title: v.title, url: v.url, thumb: v.thumb, published: v.published, publishedMs: v.publishedMs,
+    channelId: v.channelId, channelName: v.channelName, channelGenre: v.channelGenre
+  });
+  persistShortsQueue();
+  updateShortsQueueToggle();
+  return true;
+}
+function removeFromShortsQueue(id){
+  const before = shortsQueue.length;
+  shortsQueue = shortsQueue.filter(v => v.id !== id);
+  if(shortsQueue.length !== before){ persistShortsQueue(); updateShortsQueueToggle(); }
+}
+function updateShortsQueueToggle(){
+  const btn = document.getElementById('shortsQueueBtn');
+  if(!btn) return;
+  btn.textContent = shortsQueueActive ? '\u2190 Back' : `\u25B6 Queue ${shortsQueue.length}/${SHORTS_QUEUE_MAX}`;
+  btn.classList.toggle('has-items', shortsQueue.length > 0);
+  btn.title = shortsQueueActive ? 'Go back to the Shorts feed' : 'Open your Shorts watch-later queue';
+  document.getElementById('shortsTitle').textContent = shortsQueueActive ? 'Queue' : 'Shorts';
+  if(shortsQueueActive) shortsCount.textContent = shortsQueue.length;
+}
+document.getElementById('shortsQueueBtn').addEventListener('click', () => {
+  shortsQueueActive = !shortsQueueActive;
+  updateShortsQueueToggle();
+  renderShorts();
+});
 
 function updateQueueToggle(){
   const btn = document.getElementById('queueToggleBtn');
@@ -783,8 +858,50 @@ function buildEditRow(ch){
   return row;
 }
 
+function buildShortCard(v, opts){
+  const a = document.createElement('a');
+  a.className = 'short-card';
+  a.href = v.url;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  const isWatched = watchedVideoIds.has(v.id);
+  a.innerHTML = `
+    <div class="short-thumb${isWatched ? ' watched' : ''}">
+      <img src="${v.thumb}" alt="" loading="lazy">
+      <span class="short-badge">Short</span>
+      ${isWatched ? '<div class="watched-overlay">Just watched</div>' : ''}
+    </div>
+    <div class="short-info">
+      <div class="short-title">${escapeHtml(v.title)}</div>
+      <div class="short-chan">${escapeHtml(v.channelName)}</div>
+    </div>`;
+  a.querySelector('.short-thumb').appendChild(makeQueueButton(v, { short:true, fromQueue: opts.fromQueue }));
+  a.addEventListener('click', (e) => {
+    markVideoWatched(v.id);
+    markThumbAsWatched(a.querySelector('.short-thumb'));
+    if(opts.fromQueue){                           // watched it, so it frees up a queue slot
+      removeFromShortsQueue(v.id);
+      setTimeout(renderShorts, 0);
+    }
+    if(!canEmbedVideos) return; // fall back to normal new-tab navigation
+    if(e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return; // let it open in a new tab as usual
+    e.preventDefault();
+    openVideoModal(v.id, true);
+  });
+  return a;
+}
+
 function renderShorts(){
   shortsScroll.innerHTML = '';
+  updateShortsQueueToggle();
+  if(shortsQueueActive){
+    if(shortsQueue.length === 0){
+      shortsScroll.innerHTML = `<div class="panel-empty">Your Shorts queue is empty. Press the + on any Short to save it here. You can hold up to ${SHORTS_QUEUE_MAX}.</div>`;
+      return;
+    }
+    shortsQueue.forEach(v => shortsScroll.appendChild(buildShortCard(v, { fromQueue:true })));
+    return;
+  }
   const list = shorts.filter(v => matchesSelection(v)).slice(0, 30);
   shortsCount.textContent = list.length;
   if(shorts.length === 0){
@@ -795,33 +912,7 @@ function renderShorts(){
     shortsScroll.innerHTML = '<div class="panel-empty">No Shorts match the current filters.</div>';
     return;
   }
-  list.forEach(v => {
-    const a = document.createElement('a');
-    a.className = 'short-card';
-    a.href = v.url;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    const isWatched = watchedVideoIds.has(v.id);
-    a.innerHTML = `
-      <div class="short-thumb${isWatched ? ' watched' : ''}">
-        <img src="${v.thumb}" alt="" loading="lazy">
-        <span class="short-badge">Short</span>
-        ${isWatched ? '<div class="watched-overlay">Just watched</div>' : ''}
-      </div>
-      <div class="short-info">
-        <div class="short-title">${escapeHtml(v.title)}</div>
-        <div class="short-chan">${escapeHtml(v.channelName)}</div>
-      </div>`;
-    a.addEventListener('click', (e) => {
-      markVideoWatched(v.id);
-      markThumbAsWatched(a.querySelector('.short-thumb'));
-      if(!canEmbedVideos) return; // fall back to normal new-tab navigation
-      if(e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return; // let it open in a new tab as usual
-      e.preventDefault();
-      openVideoModal(v.id, true);
-    });
-    shortsScroll.appendChild(a);
-  });
+  list.forEach(v => shortsScroll.appendChild(buildShortCard(v, { fromQueue:false })));
 }
 
 function escapeHtml(s){
@@ -1198,7 +1289,7 @@ async function loadAllVideos(){
     return;
   }
   if(!apiKey){
-    setStatus('Add your YouTube API key above to load videos.', true);
+    setStatus('Add your YouTube API key below to load videos.', true);
     videos = [];
     shorts = [];
     renderVideos();
@@ -1290,7 +1381,19 @@ infoTakeMeThereBtn.addEventListener('click', () => {
   setTimeout(() => apiKeyInput.focus(), 400);
 });
 
-apiKeyHelpBtn.addEventListener('click', () => apiHelpModalOverlay.classList.add('open'));
+let helpSlide = 0;
+function showHelpSlide(n){
+  helpSlide = n;
+  document.querySelectorAll('.help-slide').forEach(s => s.classList.toggle('active', Number(s.dataset.slide) === n));
+  document.querySelectorAll('#helpDots span').forEach((d, i) => d.classList.toggle('on', i === n));
+  document.getElementById('helpBackBtn').style.display = n === 0 ? 'none' : '';
+  document.getElementById('helpNextBtn').style.display = n === 0 ? '' : 'none';
+  document.getElementById('helpConsoleLink').style.display = n === 1 ? '' : 'none';
+  apiHelpCloseBtn.style.display = n === 1 ? '' : 'none';
+}
+document.getElementById('helpNextBtn').addEventListener('click', () => showHelpSlide(1));
+document.getElementById('helpBackBtn').addEventListener('click', () => showHelpSlide(0));
+apiKeyHelpBtn.addEventListener('click', () => { showHelpSlide(0); apiHelpModalOverlay.classList.add('open'); });
 apiHelpCloseBtn.addEventListener('click', () => apiHelpModalOverlay.classList.remove('open'));
 apiHelpModalOverlay.addEventListener('click', (e) => {
   if(e.target === apiHelpModalOverlay) apiHelpModalOverlay.classList.remove('open');
@@ -1629,7 +1732,9 @@ infoTourBtn.addEventListener('click', () => {
   await loadChannels();
   await loadWatchedVideos();
   await loadQueue();
+  await loadShortsQueue();
   updateQueueToggle();
+  updateShortsQueueToggle();
   renderChips();
   syncActiveGenres();
   renderFilterDropdown();
