@@ -1434,10 +1434,19 @@ let videoPositions = {};
 let currentVideoId = null;
 let currentVideoTime = 0;
 let currentVideoEnded = false;
+let qualityAsked = false;
 
 async function loadVideoPositions(){
   try{ const raw = await persistGet(POSITIONS_KEY); videoPositions = raw ? JSON.parse(raw) : {}; }
   catch(e){ videoPositions = {}; }
+}
+// Ask the player for the highest quality. YouTube treats this as a hint and may ignore it.
+function askForBestQuality(){
+  const send = (func, args) => {
+    try{ videoModalIframe.contentWindow.postMessage(JSON.stringify({ event:'command', func, args }), '*'); }catch(e){}
+  };
+  send('setPlaybackQualityRange', ['hd1080', 'highres']);
+  send('setPlaybackQuality', ['highres']);
 }
 function saveCurrentPosition(){
   if(!currentVideoId) return;
@@ -1454,7 +1463,10 @@ window.addEventListener('message', (e) => {
   if(!data || !data.info) return;
   if(typeof data.info.currentTime === 'number') currentVideoTime = data.info.currentTime;
   if(data.info.playerState === 0) currentVideoEnded = true;
-  else if(data.info.playerState === 1) currentVideoEnded = false;
+  else if(data.info.playerState === 1){
+    currentVideoEnded = false;
+    if(!qualityAsked){ qualityAsked = true; askForBestQuality(); }
+  }
 });
 videoModalIframe.addEventListener('load', () => {
   if(!currentVideoId) return;
@@ -1466,6 +1478,7 @@ function openVideoModal(videoId, isVertical){
   currentVideoId = videoId;
   currentVideoTime = videoPositions[videoId] || 0;
   currentVideoEnded = false;
+  qualityAsked = false;
   const start = videoPositions[videoId] ? `&start=${videoPositions[videoId]}` : '';
   videoModalIframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&vq=hd1080&enablejsapi=1&origin=${encodeURIComponent(location.origin)}${start}`;
   videoModalFallbackLink.href = `https://www.youtube.com/watch?v=${videoId}`;
