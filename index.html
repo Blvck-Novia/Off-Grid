@@ -16,7 +16,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://anti-algo.com/preview.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=33">
+<link rel="stylesheet" href="style.css?v=35">
 <script src="theme.js?v=9"></script>
 </head>
 <body>
@@ -127,8 +127,8 @@
     <div class="info-footer">
       <div class="help-actions info-actions">
         <button type="button" id="infoBackBtn" style="display:none;">Back</button>
-        <button type="button" id="infoTourBtn">Take the guided tour</button>
-        <button type="button" class="btn-primary" id="infoNextBtn">Next</button>
+        <button type="button" class="btn-primary" id="infoTourBtn">Take the guided tour</button>
+        <button type="button" id="infoNextBtn">Next</button>
       </div>
       <div class="info-dots" id="infoDots">
         <button type="button" class="on" data-go="0" aria-label="Page 1"></button>
@@ -194,7 +194,7 @@
 <div id="tourBlocker"></div>
 <div class="tour-panel" id="tourPanelTop"></div><div class="tour-panel" id="tourPanelBottom"></div><div class="tour-panel" id="tourPanelLeft"></div><div class="tour-panel" id="tourPanelRight"></div>
 <div id="tourSpot"></div>
-<div id="tourPointer" aria-hidden="true"><svg viewBox="0 0 28 40" width="28" height="40"><path d="M14 2 V26 M4 17 L14 28 L24 17" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div id="tourPointer" aria-hidden="true"><svg viewBox="0 0 24 56" width="24" height="56"><path d="M12 2 V52 M5 44.5 L12 52 L19 44.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
 <div id="tourBubble" role="dialog" aria-live="polite">
   <div class="tour-arrow" id="tourArrow"></div>
   <div class="tour-title" id="tourTitle"></div>
@@ -1562,7 +1562,6 @@ function showInfoSlide(n){
   document.querySelectorAll('#infoDots button').forEach((d, i) => d.classList.toggle('on', i === n));
   document.getElementById('infoBackBtn').style.display = n === 0 ? 'none' : '';
   document.getElementById('infoNextBtn').style.display = n === 1 ? 'none' : '';
-  infoTourBtn.classList.toggle('btn-primary', n === 1);   // the tour is the main action on the last page
 }
 document.getElementById('infoNextBtn').addEventListener('click', () => showInfoSlide(1));
 document.getElementById('infoBackBtn').addEventListener('click', () => showInfoSlide(0));
@@ -1867,7 +1866,7 @@ function showTourStep(){
   if(!step.target) tourHint.textContent = '';
   else tourHint.textContent = step.interactive === false
     ? 'Have a go once the tour is finished.'
-    : 'The highlighted part is live, so go ahead and try it.';
+    : 'Go ahead and try it.';
   tourHint.style.display = tourHint.textContent ? 'block' : 'none';
   tourPreview.innerHTML = step.preview || '';   // our own fixed mock-ups, not user data
   tourPreview.style.display = step.preview ? 'block' : 'none';
@@ -1908,7 +1907,7 @@ function positionTour(){
   const step = tourSteps[tourIndex];
   const el = step.target ? document.querySelector(step.target) : null;
   const vw = window.innerWidth, vh = window.innerHeight, m = 12;
-  const gap = step.pointer ? 58 : 16;   // room for the bouncing arrow between the bubble and the target
+  const gap = step.pointer ? 72 : 16;   // room for the bouncing arrow between the bubble and the target
   const bw = tourBubble.offsetWidth, bh = tourBubble.offsetHeight;
   let x, y, side = 'none', rect = null;
 
@@ -1980,8 +1979,8 @@ function positionTour(){
     if(step.pointer && side === 'top'){
       tourArrow.style.display = 'none';
       tourPointer.style.display = 'block';
-      tourPointer.style.left = (rect.left + rect.width / 2 - 14) + 'px';
-      tourPointer.style.top = (rect.top - 46) + 'px';
+      tourPointer.style.left = (rect.left + rect.width / 2 - 12) + 'px';
+      tourPointer.style.top = (rect.top - 62) + 'px';
     }
   }
 }
