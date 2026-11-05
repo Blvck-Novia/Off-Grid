@@ -16,7 +16,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://anti-algo.com/preview.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=35">
+<link rel="stylesheet" href="style.css?v=37">
 <script src="theme.js?v=9"></script>
 </head>
 <body>
@@ -35,12 +35,8 @@
 <main>
   <form class="add-bar" id="addForm">
     <input id="channelInput" type="text" placeholder="Paste a channel URL or @handle" title="Paste a channel URL, an @handle or a channel ID" autocomplete="off">
-    <input id="genreInput" list="genreList" type="text" placeholder="Genre (leave blank to auto-detect)" title="Genre (leave blank to auto-detect)" autocomplete="off">
-    <datalist id="genreList">
-      <option value="Gaming"><option value="Music"><option value="Tech"><option value="Education">
-      <option value="Comedy"><option value="Cooking"><option value="Vlogs"><option value="Sports">
-      <option value="News"><option value="Film & Animation"><option value="Science">
-    </datalist>
+    <select id="genreSelect" title="Category (leave blank to auto-detect)" aria-label="Category"></select>
+    <input id="genreInput" type="text" placeholder="Type your own category" autocomplete="off" style="display:none;">
     <button type="submit" class="btn-primary">Add creator</button>
   </form>
 
@@ -194,7 +190,7 @@
 <div id="tourBlocker"></div>
 <div class="tour-panel" id="tourPanelTop"></div><div class="tour-panel" id="tourPanelBottom"></div><div class="tour-panel" id="tourPanelLeft"></div><div class="tour-panel" id="tourPanelRight"></div>
 <div id="tourSpot"></div>
-<div id="tourPointer" aria-hidden="true"><svg viewBox="0 0 24 56" width="24" height="56"><path d="M12 2 V52 M5 44.5 L12 52 L19 44.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div id="tourPointer" aria-hidden="true"><svg viewBox="0 0 24 40" width="24" height="40"><path d="M12 2 V36 M5 28.5 L12 36 L19 28.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
 <div id="tourBubble" role="dialog" aria-live="polite">
   <div class="tour-arrow" id="tourArrow"></div>
   <div class="tour-title" id="tourTitle"></div>
@@ -272,6 +268,7 @@ const statusLine = document.getElementById('statusLine');
 const addForm = document.getElementById('addForm');
 const channelInput = document.getElementById('channelInput');
 const genreInput = document.getElementById('genreInput');
+const genreSelect = document.getElementById('genreSelect');
 const refreshBtn = document.getElementById('refreshBtn');
 const infoBtn = document.getElementById('infoBtn');
 const infoModalOverlay = document.getElementById('infoModalOverlay');
@@ -659,6 +656,7 @@ document.addEventListener('click', (e) => {
 });
 
 function renderChips(){
+  buildAddGenreOptions();
   chipRail.innerHTML = '';
   creatorsCount.textContent = channels.length;
   if(channels.length === 0){
@@ -895,6 +893,37 @@ soloClearBtn.addEventListener('click', clearChannelSelection);
 
 const STANDARD_GENRES = ['Gaming','Music','Tech','Education','Comedy','Cooking','Vlogs','Sports','News','Film & Animation','Science'];
 const CUSTOM_GENRE_VALUE = '__custom__';
+
+// The category picker next to the search bar offers the same list as the creator editor, plus any
+// custom categories already in use, and "Other (type your own)".
+function buildAddGenreOptions(){
+  const keep = genreSelect.value;
+  genreSelect.innerHTML = '';
+  const add = (value, text) => { const o = document.createElement('option'); o.value = value; o.textContent = text; genreSelect.appendChild(o); };
+  add('', 'Category (leave blank to auto-detect)');
+  add('Uncategorised', 'Uncategorised');
+  STANDARD_GENRES.forEach(g => add(g, g));
+  const customs = Array.from(new Set(channels.map(c => c.genre).filter(g => g && g !== 'Uncategorised' && !STANDARD_GENRES.includes(g)))).sort((a,b) => a.localeCompare(b));
+  customs.forEach(g => add(g, g));
+  add(CUSTOM_GENRE_VALUE, 'Other (type your own)…');
+  if(Array.from(genreSelect.options).some(o => o.value === keep)) genreSelect.value = keep;
+}
+// "Other (type your own)" swaps the dropdown for a text box in the same spot, so there is only ever one bar.
+function showGenreSelect(){
+  genreInput.value = '';
+  genreInput.style.display = 'none';
+  genreSelect.style.display = '';
+  genreSelect.value = '';
+}
+genreSelect.addEventListener('change', () => {
+  if(genreSelect.value !== CUSTOM_GENRE_VALUE) return;
+  genreSelect.style.display = 'none';
+  genreInput.style.display = '';
+  genreInput.value = '';
+  genreInput.focus();
+});
+genreInput.addEventListener('blur', () => { if(!genreInput.value.trim()) showGenreSelect(); });
+genreInput.addEventListener('keydown', (e) => { if(e.key === 'Escape'){ e.preventDefault(); showGenreSelect(); } });
 
 function buildEditRow(ch){
   const row = document.createElement('div');
@@ -1527,8 +1556,9 @@ addForm.addEventListener('submit', async (e) => {
   }
   setStatus('Looking up creator…');
   const submitBtn = addForm.querySelector('button[type="submit"]');
-  const genre = genreInput.value.trim();
+  const genre = genreSelect.value === CUSTOM_GENRE_VALUE ? genreInput.value.trim() : genreSelect.value;
   channelInput.disabled = true;
+  genreSelect.disabled = true;
   genreInput.disabled = true;
   submitBtn.disabled = true;
   try{
@@ -1543,13 +1573,14 @@ addForm.addEventListener('submit', async (e) => {
       syncActiveGenres();
       renderFilterDropdown();
       channelInput.value = '';
-      genreInput.value = '';
+      showGenreSelect();
       await loadAllVideos();
     }
   }catch(err){
     setStatus(err.message || 'Could not add that creator.', true);
   }finally{
     channelInput.disabled = false;
+    genreSelect.disabled = false;
     genreInput.disabled = false;
     submitBtn.disabled = false;
   }
@@ -1907,7 +1938,7 @@ function positionTour(){
   const step = tourSteps[tourIndex];
   const el = step.target ? document.querySelector(step.target) : null;
   const vw = window.innerWidth, vh = window.innerHeight, m = 12;
-  const gap = step.pointer ? 72 : 16;   // room for the bouncing arrow between the bubble and the target
+  const gap = step.pointer ? 66 : 16;   // room for the bouncing arrow between the bubble and the target
   const bw = tourBubble.offsetWidth, bh = tourBubble.offsetHeight;
   let x, y, side = 'none', rect = null;
 
@@ -1980,7 +2011,7 @@ function positionTour(){
       tourArrow.style.display = 'none';
       tourPointer.style.display = 'block';
       tourPointer.style.left = (rect.left + rect.width / 2 - 12) + 'px';
-      tourPointer.style.top = (rect.top - 62) + 'px';
+      tourPointer.style.top = (rect.top - 52) + 'px';
     }
   }
 }
