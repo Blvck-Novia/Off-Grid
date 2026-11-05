@@ -16,8 +16,8 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://anti-algo.com/preview.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=25">
-<script src="theme.js?v=8"></script>
+<link rel="stylesheet" href="style.css?v=29">
+<script src="theme.js?v=9"></script>
 </head>
 <body>
 <div class="scanline"></div>
@@ -28,13 +28,13 @@
   </div>
   <div class="actions">
     <button id="infoBtn" title="How to use">❓ Help</button>
-    <button id="refreshBtn">↻ Refresh</button>
+    <button id="refreshBtn"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7M13 2.5v3h-3"/></svg>Refresh</button>
   </div>
 </header>
 
 <main>
   <form class="add-bar" id="addForm">
-    <input id="channelInput" type="text" placeholder="Add a creator — paste a channel URL, @handle, or channel ID" title="Add a creator — paste a channel URL, @handle, or channel ID" autocomplete="off">
+    <input id="channelInput" type="text" placeholder="Paste a channel URL or @handle" title="Paste a channel URL, an @handle or a channel ID" autocomplete="off">
     <input id="genreInput" list="genreList" type="text" placeholder="Genre (leave blank to auto-detect)" title="Genre (leave blank to auto-detect)" autocomplete="off">
     <datalist id="genreList">
       <option value="Gaming"><option value="Music"><option value="Tech"><option value="Education">
@@ -86,15 +86,15 @@
   <div class="apikey-bar" id="apiKeyBar">
     <label for="apiKeyInput" class="apikey-bar-label">API Key:</label>
     <input id="apiKeyInput" type="password" placeholder="Paste your key here" title="Paste your free YouTube Data API key here. Not sure what that is? Press Get a free key.">
-    <button type="button" id="apiKeyToggleBtn" title="Show/hide key">👁</button>
+    <button type="button" id="apiKeyToggleBtn" title="Show/hide key" aria-label="Show or hide key"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 8C3 5 5.3 3.5 8 3.5s5 1.5 6.5 4.5C13 11 10.7 12.5 8 12.5S3 11 1.5 8z"/><circle cx="8" cy="8" r="2.2"/></svg></button>
     <button type="button" id="apiKeySaveBtn">Save key</button>
     <button type="button" class="btn apikey-getkey" id="apiKeyHelpBtn" title="Step-by-step: how to get your free YouTube API key">Get a free key</button>
   </div>
 
   <div class="apikey-bar" id="dataBar">
     <span class="data-bar-label">Your list</span>
-    <button type="button" id="exportBtn">⭳ Export</button>
-    <button type="button" id="importBtn">⭱ Import</button>
+    <button type="button" id="exportBtn"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8M4.5 7 8 10.5 11.5 7M3 13.5h10"/></svg>Export</button>
+    <button type="button" id="importBtn"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 11V3M4.5 6 8 2.5 11.5 6M3 13.5h10"/></svg>Import</button>
     <input type="file" id="importFileInput" accept=".json,application/json" hidden>
   </div>
   </div>
@@ -194,6 +194,7 @@
 <div id="tourBlocker"></div>
 <div class="tour-panel" id="tourPanelTop"></div><div class="tour-panel" id="tourPanelBottom"></div><div class="tour-panel" id="tourPanelLeft"></div><div class="tour-panel" id="tourPanelRight"></div>
 <div id="tourSpot"></div>
+<div id="tourPointer" aria-hidden="true"><svg viewBox="0 0 28 40" width="28" height="40"><path d="M14 2 V26 M4 17 L14 28 L24 17" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
 <div id="tourBubble" role="dialog" aria-live="polite">
   <div class="tour-arrow" id="tourArrow"></div>
   <div class="tour-title" id="tourTitle"></div>
@@ -213,6 +214,8 @@ const STORAGE_KEY = 'channels';
 // YouTube's embedded player refuses to load at all from a file:// page (Error 153),
 // so when opened that way we skip the pop-out player and just open videos in a new tab.
 const canEmbedVideos = window.location.protocol !== 'file:';
+const EYE_SVG = '<svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 8C3 5 5.3 3.5 8 3.5s5 1.5 6.5 4.5C13 11 10.7 12.5 8 12.5S3 11 1.5 8z"/><circle cx="8" cy="8" r="2.2"/></svg>';
+const EYE_OFF_SVG = '<svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 8C3 5 5.3 3.5 8 3.5s5 1.5 6.5 4.5C13 11 10.7 12.5 8 12.5S3 11 1.5 8z"/><circle cx="8" cy="8" r="2.2"/><path d="M3 13 13 3"/></svg>';
 const APIKEY_STORAGE_KEY = 'yt_api_key';
 const WATCHED_STORAGE_KEY = 'watched_videos';
 const WATCHED_HISTORY_CAP = 2000; // trim oldest entries beyond this to keep storage small
@@ -1724,7 +1727,7 @@ async function loadApiKey(){
 apiKeyToggleBtn.addEventListener('click', () => {
   const hidden = apiKeyInput.type === 'password';
   apiKeyInput.type = hidden ? 'text' : 'password';
-  apiKeyToggleBtn.textContent = hidden ? '🙈' : '👁';
+  apiKeyToggleBtn.innerHTML = hidden ? EYE_OFF_SVG : EYE_SVG;
 });
 
 apiKeySaveBtn.addEventListener('click', async () => {
@@ -1746,7 +1749,7 @@ apiKeySaveBtn.addEventListener('click', async () => {
 const TOUR_STEPS = [
   { target:'#apiKeyBar', placement:'top', title:'Step 1: get your free API key',
     text:'This page fetches videos straight from YouTube using your own free key. Paste it here and press Save key. It stays in your browser and nobody else can see it.' },
-  { target:'#apiKeyHelpBtn', placement:'top', title:'Never made a key before?',
+  { target:'#apiKeyHelpBtn', placement:'top', pointer:true, title:'Never made a key before?',
     text:'Press Get a free key for a step-by-step walkthrough. It takes a few minutes and costs nothing.' },
   { target:'#addForm', placement:'bottom', title:'Step 2: add a creator',
     text:'Paste a channel\u2019s URL, their @handle or the channel ID, pick a genre if you like (leave it blank and one is suggested), then press Add creator. Start with channels you already subscribe to.' },
@@ -1777,6 +1780,7 @@ const tourBlocker = document.getElementById('tourBlocker');
 const tourSpot = document.getElementById('tourSpot');
 const tourBubble = document.getElementById('tourBubble');
 const tourArrow = document.getElementById('tourArrow');
+const tourPointer = document.getElementById('tourPointer');
 const tourTitle = document.getElementById('tourTitle');
 const tourText = document.getElementById('tourText');
 const tourPreview = document.getElementById('tourPreview');
@@ -1808,6 +1812,8 @@ function endTour(){
   tourBlocker.classList.remove('active');
   tourBlocker.classList.remove('dim');
   tourSpot.style.display = 'none';
+  tourPointer.style.display = 'none';
+  tourSpot.classList.remove('pulse');
   tourBubble.style.display = 'none';
   window.scrollTo({ top: 0 });
 }
@@ -1859,12 +1865,15 @@ function positionTour(){
   if(!tourActive) return;
   const step = tourSteps[tourIndex];
   const el = step.target ? document.querySelector(step.target) : null;
-  const vw = window.innerWidth, vh = window.innerHeight, m = 12, gap = 16;
+  const vw = window.innerWidth, vh = window.innerHeight, m = 12;
+  const gap = step.pointer ? 58 : 16;   // room for the bouncing arrow between the bubble and the target
   const bw = tourBubble.offsetWidth, bh = tourBubble.offsetHeight;
   let x, y, side = 'none', rect = null;
 
   tourArrow.className = 'tour-arrow';
   tourArrow.style.display = 'none';
+  tourPointer.style.display = 'none';
+  tourSpot.classList.toggle('pulse', !!(step.pointer && el));
 
   if(!el){
     // Final step: no target, so dim the whole page and centre the bubble
@@ -1925,6 +1934,13 @@ function positionTour(){
       tourArrow.className = 'tour-arrow ' + (side === 'right' ? 'left' : 'right');
     }
     tourArrow.style.display = 'block';
+    // Animated arrow: sits in the gap above the target, bobbing down towards it
+    if(step.pointer && side === 'top'){
+      tourArrow.style.display = 'none';
+      tourPointer.style.display = 'block';
+      tourPointer.style.left = (rect.left + rect.width / 2 - 14) + 'px';
+      tourPointer.style.top = (rect.top - 46) + 'px';
+    }
   }
 }
 
