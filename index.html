@@ -16,7 +16,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://anti-algo.com/preview.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=32">
+<link rel="stylesheet" href="style.css?v=33">
 <script src="theme.js?v=9"></script>
 </head>
 <body>
@@ -232,7 +232,10 @@ async function ytFetch(endpoint, params){
   try{ data = await res.json(); }catch(e){ data = null; }
   if(!res.ok){
     const msg = data && data.error && data.error.message ? data.error.message : ('HTTP ' + res.status);
-    throw new Error('YouTube API error: ' + msg);
+    const err = new Error('YouTube API error: ' + msg);
+    err.status = res.status;
+    err.reason = data && data.error && data.error.errors && data.error.errors[0] ? data.error.errors[0].reason : '';
+    throw err;
   }
   return data;
 }
@@ -1207,16 +1210,52 @@ async function resolveChannel(input){
   };
 }
 
+// Most channels keep their uploads in a playlist whose ID is the channel ID with "UC" swapped for "UU".
+// A few don't (brand-new channels, channels with no public videos, some auto-generated ones), so when that
+// guess isn't found we ask YouTube for the real uploads playlist before giving up.
+const uploadsIdCache = new Map();
+
+function noUploadsError(channel){
+  const e = new Error(`${channel.name} has no public videos to show yet`);
+  e.code = 'NO_UPLOADS';
+  return e;
+}
+function isPlaylistNotFound(e){
+  return e && (e.reason === 'playlistNotFound' || (e.status === 404 && /playlist/i.test(e.message)));
+}
+
+async function resolveUploadsId(channel){
+  if(uploadsIdCache.has(channel.id)) return uploadsIdCache.get(channel.id);
+  const data = await ytFetch('channels', { part: 'contentDetails', id: channel.id });
+  const item = data.items && data.items[0];
+  if(!item) throw new Error(`${channel.name} could not be found on YouTube. Try removing and adding them again.`);
+  const id = item.contentDetails && item.contentDetails.relatedPlaylists && item.contentDetails.relatedPlaylists.uploads;
+  uploadsIdCache.set(channel.id, id || null);
+  return id || null;
+}
+
+async function fetchUploadsPage(channel, params){
+  const guess = uploadsIdCache.get(channel.id) || ('UU' + channel.id.slice(2));
+  try{
+    return await ytFetch('playlistItems', { ...params, playlistId: guess });
+  }catch(e){
+    if(!isPlaylistNotFound(e)) throw e;
+    const real = await resolveUploadsId(channel);
+    if(!real || real === guess) throw noUploadsError(channel);
+    try{
+      return await ytFetch('playlistItems', { ...params, playlistId: real });
+    }catch(e2){
+      if(isPlaylistNotFound(e2)) throw noUploadsError(channel);
+      throw e2;
+    }
+  }
+}
+
 async function fetchChannelVideos(channel){
-  const uploadsPlaylistId = 'UU' + channel.id.slice(2);
   // 50 is the API's max per request. Pulling more than the ~15 we used to means a burst
   // of Shorts from a prolific creator can no longer crowd a still-recent regular video
   // out of the window entirely.
-  const data = await ytFetch('playlistItems', {
-    part: 'snippet,contentDetails',
-    playlistId: uploadsPlaylistId,
-    maxResults: 50
-  });
+  const data = await fetchUploadsPage(channel, { part: 'snippet,contentDetails', maxResults: 50 });
   return mapPlaylistItems(data.items || [], channel);
 }
 
@@ -1251,12 +1290,11 @@ async function deepLoadChannel(ch){
   deepLoadedChannels.add(ch.id);
   setStatus(`Loading more of ${ch.name}'s uploads…`);
   try{
-    const uploadsId = 'UU' + ch.id.slice(2);
     let fetched = [], pageToken = '';
     for(let page = 0; page < DEEP_PAGES; page++){
-      const params = { part: 'snippet,contentDetails', playlistId: uploadsId, maxResults: 50 };
+      const params = { part: 'snippet,contentDetails', maxResults: 50 };
       if(pageToken) params.pageToken = pageToken;
-      const data = await ytFetch('playlistItems', params);
+      const data = await fetchUploadsPage(ch, params);
       fetched = fetched.concat(mapPlaylistItems(data.items || [], ch));
       pageToken = data.nextPageToken;
       if(!pageToken) break;
@@ -1447,8 +1485,10 @@ async function loadAllVideos(){
   const results = await Promise.allSettled(channels.map(fetchChannelVideos));
   let all = [];
   let failures = [];
+  let noUploads = [];
   results.forEach((r, i) => {
     if(r.status === 'fulfilled') all = all.concat(r.value);
+    else if(r.reason && r.reason.code === 'NO_UPLOADS') noUploads.push(channels[i].name);
     else failures.push(channels[i].name + ': ' + (r.reason && r.reason.message ? r.reason.message : 'failed'));
   });
   all.sort((a,b) => b.publishedMs - a.publishedMs);
@@ -1467,6 +1507,8 @@ async function loadAllVideos(){
   refreshBtn.disabled = false;
   if(failures.length > 0){
     setStatus(`Loaded feed, but some channels failed: ${failures.join('; ')}`, true);
+  } else if(noUploads.length > 0){
+    setStatus(`Loaded your feed. No public videos to show yet from: ${noUploads.join(', ')}.`);
   } else {
     setStatus(`Updated · ${videos.length} videos from ${channels.length} creator${channels.length>1?'s':''} · ${new Date().toLocaleTimeString()}`);
   }
