@@ -16,7 +16,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://anti-algo.com/preview.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=23">
+<link rel="stylesheet" href="style.css?v=24">
 <script src="theme.js?v=8"></script>
 </head>
 <body>
@@ -27,7 +27,7 @@
     <div class="tagline">Latest uploads from your favourite creators</div>
   </div>
   <div class="actions">
-    <button id="infoBtn" title="How to use"><svg class="info-i" viewBox="0 0 10 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.2 5.6 C3.6 8 3.2 10.2 3.4 11.6 C3.6 12.9 4.8 13 6 11.9"/><circle cx="5.4" cy="2.4" r="0.6" fill="currentColor"/></svg> Info</button>
+    <button id="infoBtn" title="How to use">❓ Help</button>
     <button id="refreshBtn">↻ Refresh</button>
   </div>
 </header>
@@ -85,11 +85,10 @@
   <div class="footer-mid" style="display:flex; justify-content:center; gap:12px;">
   <div class="apikey-bar" id="apiKeyBar">
     <label for="apiKeyInput" class="apikey-bar-label">API Key:</label>
-    <input id="apiKeyInput" type="password" placeholder="Paste your key here" title="Paste your free YouTube Data API key here. Not sure what that is? Press Help.">
+    <input id="apiKeyInput" type="password" placeholder="Paste your key here" title="Paste your free YouTube Data API key here. Not sure what that is? Press Get a free key.">
     <button type="button" id="apiKeyToggleBtn" title="Show/hide key">👁</button>
     <button type="button" id="apiKeySaveBtn">Save key</button>
-    <button type="button" id="apiKeyHelpBtn" title="What is an API key, and how do I get one?">❓ Help</button>
-    <a class="btn apikey-getkey" href="https://console.cloud.google.com/flows/enableapi?apiid=youtube.googleapis.com" target="_blank" rel="noopener" title="Opens Google in a new tab to set up your free key">Get a free key</a>
+    <button type="button" class="btn apikey-getkey" id="apiKeyHelpBtn" title="Step-by-step: how to get your free YouTube API key">Get a free key</button>
   </div>
 
   <div class="apikey-bar" id="dataBar">
@@ -108,7 +107,7 @@
     <div class="info-slide active" data-slide="0">
       <div class="modal-title">How Anti Algo works</div>
       <ol class="modal-steps">
-        <li><strong>Get a free YouTube API key.</strong> It's a one-off job that takes about five minutes, and it's what lets this site fetch videos from YouTube for you. Press <strong>Help</strong> in the box at the bottom of the page and it will walk you through it.</li>
+        <li><strong>Get a free YouTube API key.</strong> It's a one-off job that takes about five minutes, and it's what lets this site fetch videos from YouTube for you. Press <strong>Get a free key</strong> in the box at the bottom of the page and it will walk you through it.</li>
         <li><strong>Paste your key</strong> into the <strong>API Key</strong> box and press <strong>Save key</strong>.</li>
         <li><strong>Add creators you already follow.</strong> Paste a channel's link or @handle into the box at the top and press <strong>Add creator</strong>. Give them a genre if you like, or leave it blank and one is suggested for you.</li>
         <li><strong>Watch.</strong> Their latest videos appear newest first. Click a video to play it, or click a creator's name (or a genre) to see just those.</li>
@@ -219,7 +218,7 @@ let watchedVideoIds = new Set();
 let apiKey = '';
 
 async function ytFetch(endpoint, params){
-  if(!apiKey) throw new Error('Add your YouTube API key below first (it\'s free, press Help if you need a hand).');
+  if(!apiKey) throw new Error('Add your YouTube API key below first (it\'s free, press Get a free key for a walkthrough).');
   const url = new URL('https://www.googleapis.com/youtube/v3/' + endpoint);
   Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
   url.searchParams.set('key', apiKey);
@@ -1745,7 +1744,7 @@ const TOUR_STEPS = [
   { target:'#apiKeyBar', placement:'top', title:'Step 1: get your free API key',
     text:'This page fetches videos straight from YouTube using your own free key. Paste it here and press Save key. It stays in your browser and nobody else can see it.' },
   { target:'#apiKeyHelpBtn', placement:'top', title:'Never made a key before?',
-    text:'Press Help for a step-by-step walkthrough. It takes a few minutes and costs nothing.' },
+    text:'Press Get a free key for a step-by-step walkthrough. It takes a few minutes and costs nothing.' },
   { target:'#addForm', placement:'bottom', title:'Step 2: add a creator',
     text:'Paste a channel\u2019s URL, their @handle or the channel ID, pick a genre if you like (leave it blank and one is suggested), then press Add creator. Start with channels you already subscribe to.' },
   { target:'.creators-panel', placement:'right', title:'Your creators',
@@ -1768,7 +1767,7 @@ const TOUR_STEPS = [
   { target:'#dataBar', placement:'top', title:'Back up or move your list',
     text:'Export saves your creators and genres to a file, and Import loads them on another device. Your API key isn\u2019t included, so enter it separately on each device.' },
   { target:null, title:'You\u2019re all set!',
-    text:'Add your first creator and enjoy a feed that is entirely your own. You can replay this tour any time from the Info button.' }
+    text:'Add your first creator and enjoy a feed that is entirely your own. You can replay this tour any time from the Help button at the top.' }
 ];
 
 const tourBlocker = document.getElementById('tourBlocker');
