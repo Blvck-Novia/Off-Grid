@@ -140,6 +140,8 @@
     padding:11px 14px; border-radius:3px; font-family: var(--font-mono); font-size:13px;
   }
   .add-bar input::placeholder{ color: var(--placeholder); }
+  .add-bar select.is-placeholder{ color: var(--placeholder); }
+  .add-bar select option{ color: var(--text); }
   .add-bar #genreSelect, .add-bar #genreInput{ flex:0 1 300px; min-width:200px; }
   .add-bar #channelInput{ min-width:180px; }
   .add-bar button{ flex:0 0 auto; }

@@ -16,7 +16,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://anti-algo.com/preview.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=37">
+<link rel="stylesheet" href="style.css?v=38">
 <script src="theme.js?v=9"></script>
 </head>
 <body>
@@ -891,7 +891,7 @@ function updateSoloBadge(){
 
 soloClearBtn.addEventListener('click', clearChannelSelection);
 
-const STANDARD_GENRES = ['Gaming','Music','Tech','Education','Comedy','Cooking','Vlogs','Sports','News','Film & Animation','Science'];
+const STANDARD_GENRES = ['Gaming','Music','Tech','Education','Comedy','Business','News','Vlogs','Lifestyle','Film','Sports'];
 const CUSTOM_GENRE_VALUE = '__custom__';
 
 // The category picker next to the search bar offers the same list as the creator editor, plus any
@@ -907,6 +907,7 @@ function buildAddGenreOptions(){
   customs.forEach(g => add(g, g));
   add(CUSTOM_GENRE_VALUE, 'Other (type your own)…');
   if(Array.from(genreSelect.options).some(o => o.value === keep)) genreSelect.value = keep;
+  genreSelect.classList.toggle('is-placeholder', genreSelect.value === '');
 }
 // "Other (type your own)" swaps the dropdown for a text box in the same spot, so there is only ever one bar.
 function showGenreSelect(){
@@ -914,8 +915,10 @@ function showGenreSelect(){
   genreInput.style.display = 'none';
   genreSelect.style.display = '';
   genreSelect.value = '';
+  genreSelect.classList.add('is-placeholder');
 }
 genreSelect.addEventListener('change', () => {
+  genreSelect.classList.toggle('is-placeholder', genreSelect.value === '');
   if(genreSelect.value !== CUSTOM_GENRE_VALUE) return;
   genreSelect.style.display = 'none';
   genreInput.style.display = '';
@@ -1176,14 +1179,15 @@ const TOPIC_GENRE_MAP = {
   'independent music':'Music', 'music':'Music',
   'technology':'Tech', 'mobile phone':'Tech', 'software':'Tech', 'personal computer':'Tech',
   'knowledge':'Education', 'education':'Education',
-  'food':'Cooking',
-  'lifestyle (sociology)':'Vlogs', 'fashion':'Vlogs', 'physical fitness':'Vlogs', 'vehicle':'Vlogs',
+  'business':'Business', 'finance':'Business', 'investment':'Business', 'entrepreneurship':'Business', 'marketing':'Business', 'real estate':'Business',
+  'food':'Lifestyle', 'lifestyle (sociology)':'Lifestyle', 'fashion':'Lifestyle', 'physical fitness':'Lifestyle', 'health':'Lifestyle',
+  'vehicle':'Vlogs',
   'sport':'Sports', 'association football':'Sports', 'basketball':'Sports', 'american football':'Sports',
-  'film':'Film & Animation', 'television program':'Film & Animation', 'animated cartoon':'Film & Animation',
-  'entertainment':'Film & Animation', 'action film':'Film & Animation',
+  'film':'Film', 'television program':'Film', 'animated cartoon':'Film',
+  'entertainment':'Film', 'action film':'Film',
   'humour':'Comedy', 'comedy':'Comedy',
   'politics':'News', 'society':'News',
-  'physics':'Science', 'biology':'Science', 'chemistry':'Science', 'natural science':'Science',
+  'physics':'Education', 'biology':'Education', 'chemistry':'Education', 'natural science':'Education',
 };
 
 function titleCase(s){
