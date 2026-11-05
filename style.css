@@ -761,3 +761,14 @@ a.brand:hover h1{ color: var(--amber); }
 .menu-sep{ height:1px; background: var(--line); margin:6px 4px; }
 .menu-danger{ color:#ff6b6b; }
 .menu-danger:hover{ color:#ff8a8a; }
+
+/* drawn icons for the Queue buttons (same style as the + and tick) */
+.qi{ display:inline-block; vertical-align:middle; margin-right:6px; }
+.qi-play{
+  width:0; height:0; border-left:7px solid currentColor; border-top:4.5px solid transparent; border-bottom:4.5px solid transparent;
+  margin-top:-1px;
+}
+.qi-back{
+  width:6px; height:6px; border-left:2px solid currentColor; border-bottom:2px solid currentColor;
+  transform: rotate(45deg); margin:-1px 8px 0 3px; border-radius:1px;
+}

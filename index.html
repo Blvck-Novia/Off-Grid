@@ -4,9 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anti Algo | Curate your feed</title>
+<meta name="description" content="Latest uploads from your favourite creators. No algorithm, just the people you chose.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Anti Algo">
+<meta property="og:title" content="Anti Algo | Curate your feed">
+<meta property="og:description" content="Latest uploads from your favourite creators. No algorithm, just the people you chose.">
+<meta property="og:url" content="https://anti-algo.com/">
+<meta property="og:image" content="https://anti-algo.com/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://anti-algo.com/preview.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=17">
-<script src="theme.js?v=7"></script>
+<link rel="stylesheet" href="style.css?v=21">
+<script src="theme.js?v=8"></script>
 </head>
 <body>
 <div class="scanline"></div>
@@ -51,7 +62,7 @@
           Only: <span id="soloBadgeName"></span>
           <button type="button" id="soloClearBtn" title="Show all creators">✕</button>
         </span>
-        <button type="button" id="queueToggleBtn" class="filter-btn" title="Your watch-later queue">▶ Queue 0/12</button>
+        <button type="button" id="queueToggleBtn" class="filter-btn" title="Your watch-later queue"><span class="qi qi-play"></span>Queue 0/12</button>
       </div>
       <div id="statusLine" class="status-line"></div>
       <div class="feed-scroll">
@@ -62,7 +73,7 @@
     <aside class="shorts-rail">
       <div class="panel-title" id="shortsHeading">
         <span id="shortsTitle">Shorts</span> <span class="count" id="shortsCount">0</span>
-        <button type="button" id="shortsQueueBtn" class="filter-btn" title="Your Shorts watch-later queue">▶ Queue 0/12</button>
+        <button type="button" id="shortsQueueBtn" class="filter-btn" title="Your Shorts watch-later queue"><span class="qi qi-play"></span>Queue 0/12</button>
       </div>
       <div id="shortsScroll" class="shorts-scroll"></div>
     </aside>
@@ -78,7 +89,7 @@
     <button type="button" id="apiKeyToggleBtn" title="Show/hide key">👁</button>
     <button type="button" id="apiKeySaveBtn">Save key</button>
     <button type="button" id="apiKeyHelpBtn" title="What is an API key, and how do I get one?">❓ Help</button>
-    <a class="btn apikey-getkey" href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener" title="Opens Google Cloud Console in a new tab">Get a free key</a>
+    <a class="btn apikey-getkey" href="https://console.cloud.google.com/flows/enableapi?apiid=youtube.googleapis.com" target="_blank" rel="noopener" title="Opens Google in a new tab to set up your free key">Get a free key</a>
   </div>
 
   <div class="apikey-bar" id="dataBar">
@@ -110,33 +121,23 @@
 <div class="modal-overlay" id="apiHelpModalOverlay">
   <div class="modal-box help-box">
     <div class="help-slide active" data-slide="0">
-      <div class="modal-title">What's an API key, and why do I need one?</div>
-      <p class="modal-text">YouTube lets other websites ask it for information, such as "what are this creator's newest videos?", through something called an <strong>API</strong>. Think of it as a service hatch: this site places the order, and YouTube hands over the answer.</p>
-      <p class="modal-text">An <strong>API key</strong> is your personal pass for using that hatch. It's what lets this site fetch the feed of the creators <em>you</em> choose. Without one, YouTube won't answer, so your feed would stay empty.</p>
-      <ul class="modal-facts">
-        <li><strong>It's free.</strong> No payment details are needed, and the free allowance is far more than you'll use.</li>
-        <li><strong>It's private.</strong> Your key is saved only in your own browser. Nobody else can see or use it.</li>
-        <li><strong>It's read-only.</strong> It can only look up public YouTube information. It can't post, comment or touch your account.</li>
-      </ul>
-    </div>
-    <div class="help-slide" data-slide="1">
       <div class="modal-title">Get your key <span class="help-sub">(1 of 3)</span></div>
       <ol class="modal-steps">
-        <li>Open <strong>Google Cloud Console</strong> (the button below) and sign in with any Google account.</li>
-        <li>Click the project picker at the top and create a <strong>New project</strong>. Any name works.</li>
-        <li>Search for <strong>YouTube Data API v3</strong> in the search bar at the top, open it and click <strong>Enable</strong>.</li>
+        <li>Press <strong>Set up with Google</strong> below and sign in with any Google account.</li>
+        <li>Google asks you to choose a project. Pick <strong>Create a new project</strong>. Any name works.</li>
+        <li>Press <strong>Enable</strong>. This switches on YouTube Data API v3 for you.</li>
+      </ol>
+    </div>
+    <div class="help-slide" data-slide="1">
+      <div class="modal-title">Get your key <span class="help-sub">(2 of 3)</span></div>
+      <ol class="modal-steps" start="4">
+        <li>Open <a class="help-link" href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener"><strong>Credentials</strong></a> and press <strong>Create credentials</strong>.</li>
+        <li>For <em>"Which API are you using?"</em> keep <strong>YouTube Data API v3</strong>. For <em>"What data will you be accessing?"</em> choose <strong>Public data</strong>, then continue.</li>
+        <li>Name the key <strong>API key</strong>.</li>
+        <li>Under <strong>Select API restrictions</strong>, open the dropdown, type <strong>YouTube Data API v3</strong>, tick it and press <strong>OK</strong>.</li>
       </ol>
     </div>
     <div class="help-slide" data-slide="2">
-      <div class="modal-title">Get your key <span class="help-sub">(2 of 3)</span></div>
-      <ol class="modal-steps" start="4">
-        <li>Go to <strong>APIs &amp; Services → Credentials → Create credentials</strong>.</li>
-        <li>For <em>"Which API are you using?"</em> keep <strong>YouTube Data API v3</strong>. For <em>"What data will you be accessing?"</em> choose <strong>Public data</strong>, then continue.</li>
-        <li>Name the key <strong>API key</strong>.</li>
-        <li>Under <strong>Select API restrictions</strong>, search for <strong>YouTube Data API v3</strong>, tick it and press <strong>OK</strong>.</li>
-      </ol>
-    </div>
-    <div class="help-slide" data-slide="3">
       <div class="modal-title">Get your key <span class="help-sub">(3 of 3)</span></div>
       <ol class="modal-steps" start="8">
         <li>Under <strong>Key restrictions</strong>, choose <strong>Websites</strong>, press <strong>Add</strong> and paste this address:
@@ -149,10 +150,10 @@
       <p class="modal-text">Stuck? Tell us on the Feedback page and we'll help.</p>
     </div>
     <div class="help-footer">
-      <div class="help-dots" id="helpDots"><span class="on"></span><span></span><span></span><span></span></div>
+      <div class="help-dots" id="helpDots"><span class="on"></span><span></span><span></span></div>
       <div class="help-actions">
         <button type="button" id="helpBackBtn" style="display:none;">Back</button>
-        <a class="btn apikey-getkey" id="helpConsoleLink" href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener" style="display:none;">Open Google Cloud Console</a>
+        <a class="btn apikey-getkey" id="helpConsoleLink" href="https://console.cloud.google.com/flows/enableapi?apiid=youtube.googleapis.com" target="_blank" rel="noopener" style="display:none;">Set up with Google</a>
         <button type="button" class="btn-primary" id="helpNextBtn">Next</button>
         <button type="button" class="btn-primary" id="apiHelpCloseBtn" style="display:none;">Got it</button>
       </div>
@@ -449,7 +450,7 @@ function removeFromShortsQueue(id){
 function updateShortsQueueToggle(){
   const btn = document.getElementById('shortsQueueBtn');
   if(!btn) return;
-  btn.textContent = shortsQueueActive ? '\u2190 Back' : `\u25B6 Queue ${shortsQueue.length}/${SHORTS_QUEUE_MAX}`;
+  btn.innerHTML = shortsQueueActive ? '<span class="qi qi-back"></span>Back' : `<span class="qi qi-play"></span>Queue ${shortsQueue.length}/${SHORTS_QUEUE_MAX}`;
   btn.classList.toggle('has-items', shortsQueue.length > 0);
   btn.title = shortsQueueActive ? 'Go back to the Shorts feed' : 'Open your Shorts watch-later queue';
   document.getElementById('shortsTitle').textContent = shortsQueueActive ? 'Queue' : 'Shorts';
@@ -464,7 +465,7 @@ document.getElementById('shortsQueueBtn').addEventListener('click', () => {
 function updateQueueToggle(){
   const btn = document.getElementById('queueToggleBtn');
   if(!btn) return;
-  btn.textContent = queueViewActive ? '\u2190 Back to feed' : `\u25B6 Queue ${queue.length}/${QUEUE_MAX}`;
+  btn.innerHTML = queueViewActive ? '<span class="qi qi-back"></span>Back to feed' : `<span class="qi qi-play"></span>Queue ${queue.length}/${QUEUE_MAX}`;
   btn.classList.toggle('has-items', queue.length > 0);
   btn.title = queueViewActive ? 'Go back to your feed' : 'Open your watch-later queue';
   document.getElementById('feedTitle').textContent = queueViewActive ? 'Queue' : 'Videos';
@@ -705,6 +706,19 @@ function buildChip(ch){
   chip.className = 'chan-chip';
   if(selectedChannelIds.has(ch.id)) chip.classList.add('solo-active');
 
+  chip.dataset.id = ch.id;
+
+  // Grip to drag this creator up or down within its category (arrow keys work too)
+  const grip = document.createElement('span');
+  grip.className = 'drag-handle';
+  grip.textContent = '\u22EE\u22EE';
+  grip.title = 'Drag to reorder';
+  grip.tabIndex = 0;
+  grip.setAttribute('role', 'button');
+  grip.setAttribute('aria-label', `Reorder ${ch.name}. Use the up and down arrow keys.`);
+  attachReorder(grip, chip, ch);
+  chip.appendChild(grip);
+
   const nameEl = document.createElement('strong');
   nameEl.textContent = ch.name;
   nameEl.title = selectedChannelIds.has(ch.id) ? `Click to remove ${ch.name} from selection` : `Click to add ${ch.name} to selection (up to ${MAX_SELECTED_CHANNELS} at a time)`;
@@ -724,6 +738,71 @@ function buildChip(ch){
   chip.appendChild(rm);
 
   return chip;
+}
+
+// ---------- Reordering creators within a category ----------
+// Moves one creator next to another in the saved list. The list shows each category in this order.
+function moveChannel(id, targetId, after){
+  if(id === targetId) return;
+  const moving = channels.find(c => c.id === id);
+  if(!moving) return;
+  channels = channels.filter(c => c.id !== id);
+  const at = channels.findIndex(c => c.id === targetId);
+  if(at < 0){ channels.push(moving); }
+  else channels.splice(after ? at + 1 : at, 0, moving);
+  saveChannels();
+  renderChips();
+}
+
+function attachReorder(grip, chip, ch){
+  let dragging = false, dropTarget = null, dropAfter = false;
+  const clearMarks = () => {
+    chipRail.querySelectorAll('.drop-before, .drop-after').forEach(el => el.classList.remove('drop-before', 'drop-after'));
+  };
+  grip.addEventListener('pointerdown', (e) => {
+    if(e.button !== undefined && e.button !== 0) return;
+    e.preventDefault();
+    dragging = true;
+    dropTarget = null;
+    try{ grip.setPointerCapture(e.pointerId); }catch(_){}
+    chip.classList.add('dragging');
+  });
+  grip.addEventListener('pointermove', (e) => {
+    if(!dragging) return;
+    clearMarks();
+    dropTarget = null;
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const over = el && el.closest ? el.closest('.chan-chip') : null;
+    // only chips in the same category list are valid targets
+    if(over && over !== chip && over.dataset.id && over.parentElement === chip.parentElement){
+      const r = over.getBoundingClientRect();
+      dropAfter = e.clientY > r.top + r.height / 2;
+      dropTarget = over.dataset.id;
+      over.classList.add(dropAfter ? 'drop-after' : 'drop-before');
+    }
+  });
+  const finish = (e, cancelled) => {
+    if(!dragging) return;
+    dragging = false;
+    chip.classList.remove('dragging');
+    clearMarks();
+    try{ grip.releasePointerCapture(e.pointerId); }catch(_){}
+    if(!cancelled && dropTarget) moveChannel(ch.id, dropTarget, dropAfter);
+    dropTarget = null;
+  };
+  grip.addEventListener('pointerup', (e) => finish(e, false));
+  grip.addEventListener('pointercancel', (e) => finish(e, true));
+  grip.addEventListener('keydown', (e) => {
+    if(e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    const sibling = e.key === 'ArrowUp' ? chip.previousElementSibling : chip.nextElementSibling;
+    if(!sibling || !sibling.dataset.id) return;
+    moveChannel(ch.id, sibling.dataset.id, e.key === 'ArrowDown');
+    setTimeout(() => {
+      const again = chipRail.querySelector(`.chan-chip[data-id="${CSS.escape(ch.id)}"] .drag-handle`);
+      if(again) again.focus();
+    }, 0);
+  });
 }
 
 const MAX_SELECTED_CHANNELS = 3;
@@ -958,6 +1037,41 @@ async function removeChannel(id){
   renderFilterDropdown();
   await loadAllVideos();
 }
+
+// Menu > "Clear all creators": wipes the list so you can start from scratch (API key and theme are kept)
+async function clearEverything(){
+  if(channels.length === 0 && queue.length === 0 && shortsQueue.length === 0){
+    setStatus('There is nothing to clear yet.');
+    return;
+  }
+  const ok = window.confirm('Clear all your creators and both queues and start from scratch?\n\nThis cannot be undone. Use Export first if you want a backup. Your API key and theme are kept.');
+  if(!ok) return;
+  channels = [];
+  videos = [];
+  shorts = [];
+  queue = [];
+  shortsQueue = [];
+  selectedChannelIds.clear();
+  selectedGenres.clear();
+  editingChannelId = null;
+  removedChannelsStack.length = 0;
+  queueViewActive = false;
+  shortsQueueActive = false;
+  updateUndoButton();
+  updateSoloBadge();
+  persistWatchQueue();
+  persistShortsQueue();
+  await saveChannels();
+  renderChips();
+  syncActiveGenres();
+  renderFilterDropdown();
+  updateQueueToggle();
+  updateShortsQueueToggle();
+  renderVideos();
+  renderShorts();
+  setStatus('Everything is cleared. Add your first creator to start again.');
+}
+document.addEventListener('anti-algo:clear-all', clearEverything);
 
 undoRemoveBtn.addEventListener('click', async () => {
   const restored = removedChannelsStack.pop();
@@ -1391,7 +1505,7 @@ infoTakeMeThereBtn.addEventListener('click', () => {
 });
 
 let helpSlide = 0;
-const HELP_LAST = 3;
+const HELP_LAST = 2;
 (function setupHelpAddress(){
   const code = document.getElementById('helpAddr');
   const note = document.getElementById('helpAddrNote');
@@ -1415,7 +1529,7 @@ function showHelpSlide(n){
   document.querySelectorAll('#helpDots span').forEach((d, i) => d.classList.toggle('on', i === n));
   document.getElementById('helpBackBtn').style.display = n === 0 ? 'none' : '';
   document.getElementById('helpNextBtn').style.display = n === HELP_LAST ? 'none' : '';
-  document.getElementById('helpConsoleLink').style.display = n === 1 ? '' : 'none';
+  document.getElementById('helpConsoleLink').style.display = n === 0 ? '' : 'none';
   apiHelpCloseBtn.style.display = n === HELP_LAST ? '' : 'none';
 }
 document.getElementById('helpNextBtn').addEventListener('click', () => showHelpSlide(Math.min(helpSlide + 1, HELP_LAST)));
@@ -1609,7 +1723,7 @@ const TOUR_STEPS = [
     text:'Paste a channel\u2019s URL, their @handle or the channel ID, pick a genre if you like (leave it blank and one is suggested), then press Add creator. Start with channels you already subscribe to.' },
   { target:'.creators-panel', placement:'right', title:'Your creators',
     preview:'<div class="tour-preview-label">Example</div><div class="mock-genre">\u25BE Gaming <span>2</span></div><div class="mock-chip on">Alice <i>\u270E \u2715</i></div><div class="mock-chip">Bob <i>\u270E \u2715</i></div><div class="mock-genre">\u25BE Music <span>1</span></div><div class="mock-chip">Cleo <i>\u270E \u2715</i></div>',
-    text:'Everyone you add appears here, grouped by genre. Click a name, or a genre, to see only their videos. \u270E edits a genre, \u2715 removes someone, and Undo brings them back.' },
+    text:'Everyone you add appears here, grouped by genre. Click a name, or a genre, to see only their videos. Drag \u22EE\u22EE to reorder within a genre. \u270E edits a genre, \u2715 removes someone, and Undo brings them back.' },
   { target:'#genreFilterBtn', placement:'bottom', title:'Filter by genre',
     interactive:false,
     text:'Use Filter to hide whole genres in one go, handy when you only fancy a certain kind of video.' },
