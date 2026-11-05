@@ -119,6 +119,22 @@
     menu.appendChild(link('faq.html', 'FAQ', page === 'faq.html'));
     menu.appendChild(link('feedback.html', 'Feedback', page === 'feedback.html'));
 
+    if(isHome){
+      var sep = document.createElement('div');
+      sep.className = 'menu-sep';
+      menu.appendChild(sep);
+      var clr = document.createElement('button');
+      clr.type = 'button';
+      clr.id = 'clearAllBtn';
+      clr.className = 'menu-link menu-danger';
+      clr.textContent = 'Clear all creators';
+      clr.addEventListener('click', function(){
+        closeMenu();
+        document.dispatchEvent(new CustomEvent('anti-algo:clear-all'));
+      });
+      menu.appendChild(clr);
+    }
+
     btn.addEventListener('click', function(e){
       e.stopPropagation();
       var open = menu.classList.toggle('open');
