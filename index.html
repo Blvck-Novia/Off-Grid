@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anti Algo | Curate your feed</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=18">
+<link rel="stylesheet" href="style.css?v=17">
 <script src="theme.js?v=7"></script>
 </head>
 <body>
@@ -705,19 +705,6 @@ function buildChip(ch){
   chip.className = 'chan-chip';
   if(selectedChannelIds.has(ch.id)) chip.classList.add('solo-active');
 
-  chip.dataset.id = ch.id;
-
-  // Grip to drag this creator up or down within its category (arrow keys work too)
-  const grip = document.createElement('span');
-  grip.className = 'drag-handle';
-  grip.textContent = '\u22EE\u22EE';
-  grip.title = 'Drag to reorder';
-  grip.tabIndex = 0;
-  grip.setAttribute('role', 'button');
-  grip.setAttribute('aria-label', `Reorder ${ch.name}. Use the up and down arrow keys.`);
-  attachReorder(grip, chip, ch);
-  chip.appendChild(grip);
-
   const nameEl = document.createElement('strong');
   nameEl.textContent = ch.name;
   nameEl.title = selectedChannelIds.has(ch.id) ? `Click to remove ${ch.name} from selection` : `Click to add ${ch.name} to selection (up to ${MAX_SELECTED_CHANNELS} at a time)`;
@@ -737,71 +724,6 @@ function buildChip(ch){
   chip.appendChild(rm);
 
   return chip;
-}
-
-// ---------- Reordering creators within a category ----------
-// Moves one creator next to another in the saved list. The list shows each category in this order.
-function moveChannel(id, targetId, after){
-  if(id === targetId) return;
-  const moving = channels.find(c => c.id === id);
-  if(!moving) return;
-  channels = channels.filter(c => c.id !== id);
-  const at = channels.findIndex(c => c.id === targetId);
-  if(at < 0){ channels.push(moving); }
-  else channels.splice(after ? at + 1 : at, 0, moving);
-  saveChannels();
-  renderChips();
-}
-
-function attachReorder(grip, chip, ch){
-  let dragging = false, dropTarget = null, dropAfter = false;
-  const clearMarks = () => {
-    chipRail.querySelectorAll('.drop-before, .drop-after').forEach(el => el.classList.remove('drop-before', 'drop-after'));
-  };
-  grip.addEventListener('pointerdown', (e) => {
-    if(e.button !== undefined && e.button !== 0) return;
-    e.preventDefault();
-    dragging = true;
-    dropTarget = null;
-    try{ grip.setPointerCapture(e.pointerId); }catch(_){}
-    chip.classList.add('dragging');
-  });
-  grip.addEventListener('pointermove', (e) => {
-    if(!dragging) return;
-    clearMarks();
-    dropTarget = null;
-    const el = document.elementFromPoint(e.clientX, e.clientY);
-    const over = el && el.closest ? el.closest('.chan-chip') : null;
-    // only chips in the same category list are valid targets
-    if(over && over !== chip && over.dataset.id && over.parentElement === chip.parentElement){
-      const r = over.getBoundingClientRect();
-      dropAfter = e.clientY > r.top + r.height / 2;
-      dropTarget = over.dataset.id;
-      over.classList.add(dropAfter ? 'drop-after' : 'drop-before');
-    }
-  });
-  const finish = (e, cancelled) => {
-    if(!dragging) return;
-    dragging = false;
-    chip.classList.remove('dragging');
-    clearMarks();
-    try{ grip.releasePointerCapture(e.pointerId); }catch(_){}
-    if(!cancelled && dropTarget) moveChannel(ch.id, dropTarget, dropAfter);
-    dropTarget = null;
-  };
-  grip.addEventListener('pointerup', (e) => finish(e, false));
-  grip.addEventListener('pointercancel', (e) => finish(e, true));
-  grip.addEventListener('keydown', (e) => {
-    if(e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
-    e.preventDefault();
-    const sibling = e.key === 'ArrowUp' ? chip.previousElementSibling : chip.nextElementSibling;
-    if(!sibling || !sibling.dataset.id) return;
-    moveChannel(ch.id, sibling.dataset.id, e.key === 'ArrowDown');
-    setTimeout(() => {
-      const again = chipRail.querySelector(`.chan-chip[data-id="${CSS.escape(ch.id)}"] .drag-handle`);
-      if(again) again.focus();
-    }, 0);
-  });
 }
 
 const MAX_SELECTED_CHANNELS = 3;
@@ -1687,7 +1609,7 @@ const TOUR_STEPS = [
     text:'Paste a channel\u2019s URL, their @handle or the channel ID, pick a genre if you like (leave it blank and one is suggested), then press Add creator. Start with channels you already subscribe to.' },
   { target:'.creators-panel', placement:'right', title:'Your creators',
     preview:'<div class="tour-preview-label">Example</div><div class="mock-genre">\u25BE Gaming <span>2</span></div><div class="mock-chip on">Alice <i>\u270E \u2715</i></div><div class="mock-chip">Bob <i>\u270E \u2715</i></div><div class="mock-genre">\u25BE Music <span>1</span></div><div class="mock-chip">Cleo <i>\u270E \u2715</i></div>',
-    text:'Everyone you add appears here, grouped by genre. Click a name, or a genre, to see only their videos. Drag \u22EE\u22EE to reorder within a genre. \u270E edits a genre, \u2715 removes someone, and Undo brings them back.' },
+    text:'Everyone you add appears here, grouped by genre. Click a name, or a genre, to see only their videos. \u270E edits a genre, \u2715 removes someone, and Undo brings them back.' },
   { target:'#genreFilterBtn', placement:'bottom', title:'Filter by genre',
     interactive:false,
     text:'Use Filter to hide whole genres in one go, handy when you only fancy a certain kind of video.' },

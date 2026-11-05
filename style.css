@@ -738,20 +738,3 @@ a.brand:hover h1{ color: var(--amber); }
 }
 .help-addr button{ flex:0 0 auto; margin-top:0; padding:5px 10px; font-size:12px; }
 .help-addr-note{ display:block; margin-top:6px; font-size:12px; }
-
-/* Reordering creators within a category */
-.drag-handle{
-  flex:0 0 auto; cursor:grab; user-select:none; touch-action:none; color:var(--text-dim);
-  font-size:11px; letter-spacing:-2px; line-height:1; padding:6px 4px; border-radius:4px; opacity:0.35;
-}
-.chan-chip:hover .drag-handle, .drag-handle:focus-visible{ opacity:1; }
-.drag-handle:hover{ color:var(--amber); }
-.drag-handle:active{ cursor:grabbing; }
-.chan-chip{ justify-content:flex-start; position:relative; }
-.chan-chip strong{ flex:1 1 auto; min-width:0; }
-.chan-chip.dragging{ opacity:0.5; background: var(--panel-2); }
-.chan-chip.drop-before::before, .chan-chip.drop-after::after{
-  content:""; position:absolute; left:0; right:0; height:2px; background: var(--amber); border-radius:1px;
-}
-.chan-chip.drop-before::before{ top:-2px; }
-.chan-chip.drop-after::after{ bottom:-2px; }
