@@ -75,7 +75,7 @@
       tbtn.type = 'button';
       tbtn.id = 'themeBtn';
       tbtn.className = 'menu-link menu-theme-toggle';
-      tbtn.innerHTML = '<span class="theme-icon" aria-hidden="true"></span><span>Theme</span><span class="menu-caret">\u25C2</span>';
+      tbtn.innerHTML = '<span class="theme-icon" aria-hidden="true"></span><span>Theme</span><span class="menu-caret"></span>';
       var item = document.createElement('div');
       item.className = 'theme-item';
       var list = document.createElement('div');
@@ -110,7 +110,9 @@
         e.stopPropagation();
         item.classList.toggle('open');   // tap support for touch screens; mouse users just hover
       });
-      item.addEventListener('mouseleave', function(){ item.classList.remove('open'); });
+      if(window.matchMedia && window.matchMedia('(hover: hover)').matches){
+        item.addEventListener('mouseleave', function(){ item.classList.remove('open'); });   // mouse users: leaving closes it
+      }
       item.appendChild(tbtn);
       item.appendChild(list);
       menu.appendChild(item);
