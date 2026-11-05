@@ -870,3 +870,15 @@ a.brand:hover h1{ color: var(--amber); }
 /* drawn button icons (they render the same on every phone) */
 .ic{ width:14px; height:14px; vertical-align:-2px; margin-right:6px; flex:0 0 auto; }
 #apiKeyToggleBtn .ic{ margin-right:0; vertical-align:-3px; }
+
+@media (max-width: 700px){
+  /* Help / Refresh / Menu centred under the title on phones (desktop is unchanged) */
+  header .actions{ width:100%; justify-content:center; }
+  /* welcome box: even space above and below inside the Videos box */
+  .status-line{ min-height:0; margin-bottom:6px; }
+  .welcome-panel{ margin:12px auto; padding:28px 20px; }
+  /* title block centred too, so the whole header lines up with the centred page below */
+  header{ justify-content:center; }
+  .brand-block{ align-items:center; text-align:center; width:100%; }
+  .brand{ justify-content:center; }
+}
