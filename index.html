@@ -16,7 +16,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://anti-algo.com/preview.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=24">
+<link rel="stylesheet" href="style.css?v=25">
 <script src="theme.js?v=8"></script>
 </head>
 <body>
@@ -124,10 +124,12 @@
         <li><strong>It's read-only.</strong> It can only look up public YouTube information. It can't post, comment or touch your account.</li>
       </ul>
     </div>
-    <button type="button" class="info-arrow info-arrow-prev" id="infoBackBtn" title="Previous page" aria-label="Previous page" style="display:none;"><span></span></button>
-    <button type="button" class="info-arrow info-arrow-next" id="infoNextBtn" title="Next page" aria-label="Next page"><span></span></button>
     <div class="info-footer">
-      <button type="button" class="btn-primary" id="infoTourBtn">Take the guided tour</button>
+      <div class="help-actions info-actions">
+        <button type="button" id="infoBackBtn" style="display:none;">Back</button>
+        <button type="button" id="infoTourBtn">Take the guided tour</button>
+        <button type="button" class="btn-primary" id="infoNextBtn">Next</button>
+      </div>
       <div class="info-dots" id="infoDots">
         <button type="button" class="on" data-go="0" aria-label="Page 1"></button>
         <button type="button" data-go="1" aria-label="Page 2"></button>
@@ -1515,6 +1517,7 @@ function showInfoSlide(n){
   document.querySelectorAll('#infoDots button').forEach((d, i) => d.classList.toggle('on', i === n));
   document.getElementById('infoBackBtn').style.display = n === 0 ? 'none' : '';
   document.getElementById('infoNextBtn').style.display = n === 1 ? 'none' : '';
+  infoTourBtn.classList.toggle('btn-primary', n === 1);   // the tour is the main action on the last page
 }
 document.getElementById('infoNextBtn').addEventListener('click', () => showInfoSlide(1));
 document.getElementById('infoBackBtn').addEventListener('click', () => showInfoSlide(0));

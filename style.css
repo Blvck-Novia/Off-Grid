@@ -789,23 +789,13 @@ a.brand:hover h1{ color: var(--amber); }
 .info-box .help-actions button{ margin-top:0; }
 
 /* Info carousel: side arrows, centred dots, single button */
-.info-box{ padding-left:46px; padding-right:46px; }
+.info-box{ padding-left:24px; padding-right:24px; }
 .info-footer{ display:flex; flex-direction:column; align-items:center; gap:14px; margin-top:16px; }
-.info-footer .btn-primary{ margin-top:0; }
+.info-footer button{ margin-top:0; }
+.info-actions{ margin-left:0; justify-content:center; }
 .info-dots{ display:flex; gap:8px; }
 .info-dots button{
   width:9px; height:9px; padding:0; margin:0; border-radius:50%; border:none; background: var(--line); cursor:pointer;
 }
 .info-dots button.on{ background: var(--amber); }
 .info-dots button:hover{ background: var(--amber-dim); }
-.info-arrow{
-  position:absolute; top:50%; transform:translateY(-50%); margin:0 !important;
-  width:32px; height:32px; padding:0; border-radius:50%; border:none; background:transparent; color:var(--text-dim);
-  display:flex; align-items:center; justify-content:center; cursor:pointer;
-}
-.info-arrow:hover{ background: var(--panel-2); color: var(--amber); border-color:transparent; }
-.info-arrow span{ width:9px; height:9px; border-top:2px solid currentColor; border-right:2px solid currentColor; border-radius:1px; }
-.info-arrow-next{ right:8px; }
-.info-arrow-next span{ transform: rotate(45deg); margin-right:3px; }
-.info-arrow-prev{ left:8px; }
-.info-arrow-prev span{ transform: rotate(-135deg); margin-left:3px; }
