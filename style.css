@@ -772,3 +772,18 @@ a.brand:hover h1{ color: var(--amber); }
   width:6px; height:6px; border-left:2px solid currentColor; border-bottom:2px solid currentColor;
   transform: rotate(45deg); margin:-1px 8px 0 3px; border-radius:1px;
 }
+
+/* Info dialog as a two-page carousel */
+.info-box{ position:relative; padding-top:22px; }
+.info-box .modal-title{ padding-right:28px; }
+.info-slide{ display:none; }
+.info-slide.active{ display:block; }
+.info-box .modal-text, .info-box .modal-facts li{ font-size:13px; line-height:1.5; }
+.info-box .modal-facts{ gap:6px; margin:8px 0 0; }
+.info-box .modal-facts li{ padding:8px 10px; }
+.modal-close-x{
+  position:absolute; top:10px; right:10px; margin:0 !important; width:28px; height:28px; padding:0;
+  border-radius:50%; border:none; background:transparent; color:var(--text-dim); font-size:14px; line-height:1;
+}
+.modal-close-x:hover{ background: var(--panel-2); color: var(--text); border-color:transparent; }
+.info-box .help-actions button{ margin-top:0; }

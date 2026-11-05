@@ -16,7 +16,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://anti-algo.com/preview.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=21">
+<link rel="stylesheet" href="style.css?v=22">
 <script src="theme.js?v=8"></script>
 </head>
 <body>
@@ -103,18 +103,37 @@
 </footer>
 
 <div class="modal-overlay" id="infoModalOverlay">
-  <div class="modal-box">
-    <div class="modal-title">How Anti Algo works</div>
-    <ol class="modal-steps">
-      <li><strong>Get a free YouTube API key.</strong> It's a one-off job that takes about five minutes, and it's what lets this site fetch videos from YouTube for you. Press <strong>Help</strong> in the box at the bottom of the page and it will walk you through it.</li>
-      <li><strong>Paste your key</strong> into the <strong>API Key</strong> box and press <strong>Save key</strong>.</li>
-      <li><strong>Add creators you already follow.</strong> Paste a channel's link or @handle into the box at the top and press <strong>Add creator</strong>. Give them a genre if you like, or leave it blank and one is suggested for you.</li>
-      <li><strong>Watch.</strong> Their latest videos appear newest first. Click a video to play it, or click a creator's name (or a genre) to see just those.</li>
-      <li><strong>It's all saved</strong> in your browser, so it will be here next time. No account needed.</li>
-    </ol>
-    <button type="button" class="btn-primary" id="infoTourBtn">Take the guided tour</button>
-    <button type="button" id="infoTakeMeThereBtn">Take me to the API key box</button>
-    <button type="button" id="infoCloseBtn">Close</button>
+  <div class="modal-box info-box">
+    <button type="button" class="modal-close-x" id="infoCloseBtn" title="Close" aria-label="Close">✕</button>
+    <div class="info-slide active" data-slide="0">
+      <div class="modal-title">How Anti Algo works</div>
+      <ol class="modal-steps">
+        <li><strong>Get a free YouTube API key.</strong> It's a one-off job that takes about five minutes, and it's what lets this site fetch videos from YouTube for you. Press <strong>Help</strong> in the box at the bottom of the page and it will walk you through it.</li>
+        <li><strong>Paste your key</strong> into the <strong>API Key</strong> box and press <strong>Save key</strong>.</li>
+        <li><strong>Add creators you already follow.</strong> Paste a channel's link or @handle into the box at the top and press <strong>Add creator</strong>. Give them a genre if you like, or leave it blank and one is suggested for you.</li>
+        <li><strong>Watch.</strong> Their latest videos appear newest first. Click a video to play it, or click a creator's name (or a genre) to see just those.</li>
+        <li><strong>It's all saved</strong> in your browser, so it will be here next time. No account needed.</li>
+      </ol>
+    </div>
+    <div class="info-slide" data-slide="1">
+      <div class="modal-title">What's an API key, and why do I need one?</div>
+      <p class="modal-text">YouTube lets other websites ask it for information, such as "what are this creator's newest videos?", through something called an <strong>API</strong>. Think of it as a service hatch: this site places the order, and YouTube hands over the answer.</p>
+      <p class="modal-text">An <strong>API key</strong> is your personal pass for using that hatch. It's what lets this site fetch the feed of the creators <em>you</em> choose. Without one, YouTube won't answer, so your feed would stay empty.</p>
+      <ul class="modal-facts">
+        <li><strong>It's free.</strong> No payment details are needed, and the free allowance is far more than you'll use.</li>
+        <li><strong>It's private.</strong> Your key is saved only in your own browser. Nobody else can see or use it.</li>
+        <li><strong>It's read-only.</strong> It can only look up public YouTube information. It can't post, comment or touch your account.</li>
+      </ul>
+    </div>
+    <div class="help-footer">
+      <div class="help-dots" id="infoDots"><span class="on"></span><span></span></div>
+      <div class="help-actions">
+        <button type="button" id="infoBackBtn" style="display:none;">Back</button>
+        <button type="button" class="btn-primary" id="infoTourBtn">Take the guided tour</button>
+        <button type="button" id="infoTakeMeThereBtn">Take me to the API key box</button>
+        <button type="button" id="infoNextBtn">What's an API key?</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1493,7 +1512,18 @@ addForm.addEventListener('submit', async (e) => {
 
 refreshBtn.addEventListener('click', loadAllVideos);
 
-infoBtn.addEventListener('click', () => infoModalOverlay.classList.add('open'));
+function showInfoSlide(n){
+  document.querySelectorAll('.info-slide').forEach(s => s.classList.toggle('active', Number(s.dataset.slide) === n));
+  document.querySelectorAll('#infoDots span').forEach((d, i) => d.classList.toggle('on', i === n));
+  const first = n === 0;
+  document.getElementById('infoBackBtn').style.display = first ? 'none' : '';
+  document.getElementById('infoNextBtn').style.display = first ? '' : 'none';
+  infoTourBtn.style.display = first ? '' : 'none';
+  infoTakeMeThereBtn.style.display = first ? '' : 'none';
+}
+document.getElementById('infoNextBtn').addEventListener('click', () => showInfoSlide(1));
+document.getElementById('infoBackBtn').addEventListener('click', () => showInfoSlide(0));
+infoBtn.addEventListener('click', () => { showInfoSlide(0); infoModalOverlay.classList.add('open'); });
 infoCloseBtn.addEventListener('click', () => infoModalOverlay.classList.remove('open'));
 infoModalOverlay.addEventListener('click', (e) => {
   if(e.target === infoModalOverlay) infoModalOverlay.classList.remove('open');
