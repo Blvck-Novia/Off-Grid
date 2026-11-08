@@ -106,7 +106,7 @@
       <ol class="modal-steps">
         <li><strong>Get a free YouTube API key.</strong> It's a one-off job that takes about five minutes, and it's what lets this site fetch videos from YouTube for you. Press <strong>Get a free key</strong> in the box at the bottom of the page and it will walk you through it.</li>
         <li><strong>Paste your key</strong> into the <strong>API Key</strong> box at the bottom of this page (<strong>anti-algo.com</strong>) and press <strong>Save key</strong>.</li>
-        <li><strong>Add creators you already follow.</strong> Paste a channel's link or @handle into the box at the top and press <strong>Add creator</strong>. Give them a genre if you like, or leave it blank and one is suggested for you.</li>
+        <li><strong>Add creators you already follow.</strong> Paste a channel's link or @handle into the box at the top and press <strong>Add creator</strong>. Give them a category if you like, or leave it blank and one is suggested for you. You can also paste a <strong>YouTube playlist link</strong> there to save it under <strong>Playlists</strong>, without adding the creator.</li>
         <li><strong>Watch.</strong> Their latest videos appear newest first. Click a video to play it, or click a creator's name (or a genre) to see just those.</li>
         <li><strong>It's all saved</strong> in your browser, so it will be here next time. No account needed.</li>
       </ol>
@@ -2082,7 +2082,7 @@ const TOUR_STEPS = [
   { target:'#apiKeyHelpBtn', placement:'top', pointer:true, title:'Never made a key before?',
     text:'Press Get a free key for a step-by-step walkthrough. It takes a few minutes and costs nothing.' },
   { target:'#addForm', placement:'bottom', title:'Step 2: add a creator',
-    text:'Paste a channel\u2019s URL, their @handle or the channel ID, pick a genre if you like (leave it blank and one is suggested), then press Add creator. Start with channels you already subscribe to.' },
+    text:'Paste a channel\u2019s URL, their @handle or the channel ID, pick a category if you like (leave it blank and one is suggested), then press Add creator. You can also paste a YouTube playlist link here to save it as a playlist. Start with channels you already subscribe to.' },
   { target:'.creators-panel', placement:'right', title:'Your creators',
     preview:'<div class="tour-preview-label">Example</div><div class="mock-genre">\u25BE Gaming <span>2</span></div><div class="mock-chip on">Alice <i>\u270E \u2715</i></div><div class="mock-chip">Bob <i>\u270E \u2715</i></div><div class="mock-genre">\u25BE Music <span>1</span></div><div class="mock-chip">Cleo <i>\u270E \u2715</i></div>',
     text:'Everyone you add appears here, grouped by genre. Click a name, or a genre, to see only their videos. Drag \u22EE\u22EE to reorder within a genre. \u270E edits a genre, \u2715 removes someone, and Undo brings them back.' },
@@ -2092,6 +2092,8 @@ const TOUR_STEPS = [
   { target:'.feed-col', placement:'inside', title:'Your feed',
     preview:'<div class="tour-preview-label">Example</div><div class="mock-row"><div class="mock-card"><div class="mock-thumb"></div><div class="mock-line w80"></div><div class="mock-line dim w50"></div></div><div class="mock-card"><div class="mock-thumb watched"><span>Just watched</span></div><div class="mock-line w70"></div><div class="mock-line dim w40"></div></div><div class="mock-card"><div class="mock-thumb"></div><div class="mock-line w80"></div><div class="mock-line dim w50"></div></div></div>',
     text:'The latest videos from your creators, newest first. Click one to watch it in a pop-up. Anything you have watched is marked \u201CJust watched\u201D, so you can keep track.' },
+  { target:'#playlistsBtn', placement:'bottom', title:'Playlists',
+    text:'Paste a YouTube playlist link into the add box and it is saved here, without adding the creator who made it. Handy for collabs on channels you do not follow. Playlists show in their own order, and the + button works on their videos too.' },
   { target:'#queueToggleBtn', placement:'bottom', title:'Save videos for later',
     text:'Press the + in the corner of any video\u2019s thumbnail to save it, then open Queue here to watch them when you are ready. It holds up to 12, and videos stay until you remove them with the \u2715.' },
   { target:'.shorts-rail', placement:'left', title:'Shorts, kept separate',
@@ -2101,7 +2103,7 @@ const TOUR_STEPS = [
     interactive:false,
     text:'Open Menu to pick a colour theme (Original, Bubblegum, Rouge, Amethyst, Azure or Forest) and to find the FAQ and Feedback pages. Your theme is remembered for next time.' },
   { target:'#dataBar', placement:'top', title:'Back up or move your list',
-    text:'Export saves your creators and genres to a file, and Import loads them on another device. Your API key isn\u2019t included, so enter it separately on each device.' },
+    text:'Export saves your creators, categories and playlists to a file, and Import loads them on another device. Your API key isn\u2019t included, so enter it separately on each device.' },
   { target:null, title:'You\u2019re all set!',
     text:'Add your first creator and enjoy a feed that is entirely your own. You can replay this tour any time from the Help button at the top.' }
 ];
