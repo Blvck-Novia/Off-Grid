@@ -138,7 +138,7 @@
 <div class="modal-overlay" id="apiHelpModalOverlay">
   <div class="modal-box help-box">
     <div class="help-slide active" data-slide="0">
-      <div class="modal-title">Get your key <span class="help-sub">(1 of 3)</span></div>
+      <div class="modal-title">Get your key <span class="help-sub">(1 of 4)</span></div>
       <ol class="modal-steps">
         <li>Press <strong>Set up with Google</strong> below and sign in with any Google account.</li>
         <li>Google asks you to choose a project. Pick <strong>Create a new project</strong>. Any name works.</li>
@@ -146,7 +146,7 @@
       </ol>
     </div>
     <div class="help-slide" data-slide="1">
-      <div class="modal-title">Get your key <span class="help-sub">(2 of 3)</span></div>
+      <div class="modal-title">Get your key <span class="help-sub">(2 of 4)</span></div>
       <ol class="modal-steps" start="4">
         <li>Open <a class="help-link" href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener"><strong>Credentials</strong></a> and press <strong>Create credentials</strong>.</li>
         <li>For <em>"Which API are you using?"</em> keep <strong>YouTube Data API v3</strong>. For <em>"What data will you be accessing?"</em> choose <strong>Public data</strong>, then continue.</li>
@@ -155,7 +155,7 @@
       </ol>
     </div>
     <div class="help-slide" data-slide="2">
-      <div class="modal-title">Get your key <span class="help-sub">(3 of 3)</span></div>
+      <div class="modal-title">Get your key <span class="help-sub">(3 of 4)</span></div>
       <ol class="modal-steps" start="8">
         <li>Under <strong>Key restrictions</strong>, choose <strong>Websites</strong>, press <strong>Add</strong> and paste this address:
           <span class="help-addr"><code id="helpAddr">https://your-site-address/*</code><button type="button" id="helpCopyAddr">Copy</button></span>
@@ -163,11 +163,14 @@
         <li>Press <strong>Create</strong> and copy the key Google shows you.</li>
         <li>Come back to this site (<strong>anti-algo.com</strong>), paste the key into the <strong>API Key</strong> box at the bottom of this page, and press <strong>Save key</strong>.</li>
       </ol>
+    </div>
+    <div class="help-slide" data-slide="3">
+      <div class="modal-title">Keep your key safe <span class="help-sub">(4 of 4)</span></div>
       <p class="modal-text"><strong>Keep a copy</strong> in a password manager or notes app, so it's easy to paste on another device. If you lose it, sign in to Google Cloud Console, go to <strong>APIs &amp; Services → Credentials</strong> and open your key to see it again.</p>
       <p class="modal-text">Stuck? Tell us on the Feedback page and we'll help.</p>
     </div>
     <div class="help-footer">
-      <div class="help-dots" id="helpDots"><span class="on"></span><span></span><span></span></div>
+      <div class="help-dots" id="helpDots"><span class="on"></span><span></span><span></span><span></span></div>
       <div class="help-actions">
         <button type="button" id="helpBackBtn" style="display:none;">Back</button>
         <a class="btn apikey-getkey" id="helpConsoleLink" href="https://console.cloud.google.com/flows/enableapi?apiid=youtube.googleapis.com" target="_blank" rel="noopener" style="display:none;">Set up with Google</a>
@@ -1853,7 +1856,7 @@ infoModalOverlay.addEventListener('click', (e) => {
 });
 
 let helpSlide = 0;
-const HELP_LAST = 2;
+const HELP_LAST = 3;
 (function setupHelpAddress(){
   const code = document.getElementById('helpAddr');
   const note = document.getElementById('helpAddrNote');
