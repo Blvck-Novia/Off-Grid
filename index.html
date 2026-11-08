@@ -16,7 +16,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://anti-algo.com/preview.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=38">
+<link rel="stylesheet" href="style.css?v=39">
 <script src="theme.js?v=9"></script>
 </head>
 <body>
@@ -34,7 +34,7 @@
 
 <main>
   <form class="add-bar" id="addForm">
-    <input id="channelInput" type="text" placeholder="Paste a channel URL or @handle" title="Paste a channel URL, an @handle or a channel ID" autocomplete="off">
+    <input id="channelInput" type="text" placeholder="Paste a channel or playlist URL" title="Paste a channel URL, an @handle, a channel ID or a YouTube playlist link" autocomplete="off">
     <select id="genreSelect" title="Category (leave blank to auto-detect)" aria-label="Category"></select>
     <input id="genreInput" type="text" placeholder="Type your own category" autocomplete="off" style="display:none;">
     <button type="submit" class="btn-primary">Add creator</button>
@@ -58,6 +58,7 @@
           Only: <span id="soloBadgeName"></span>
           <button type="button" id="soloClearBtn" title="Show all creators">✕</button>
         </span>
+        <button type="button" id="playlistsBtn" class="filter-btn" title="Your saved playlists"><span class="qi qi-list"></span>Playlists 0</button>
         <button type="button" id="queueToggleBtn" class="filter-btn" title="Your watch-later queue"><span class="qi qi-play"></span>Queue 0/12</button>
       </div>
       <div id="statusLine" class="status-line"></div>
@@ -484,6 +485,218 @@ document.getElementById('shortsQueueBtn').addEventListener('click', () => {
   renderShorts();
 });
 
+// ---------- Playlists: save YouTube playlists by URL, independent of your creators ----------
+const PLAYLISTS_STORAGE_KEY = 'playlists';
+const PLAYLISTS_MAX = 20;
+let playlists = [];                 // [{id,title,channelName,thumb,count}]
+let playlistViewMode = null;        // null | 'list' | 'open'
+let openPlaylistId = null;
+const playlistCache = new Map();    // id -> video objects
+let playlistSaveChain = Promise.resolve();
+
+async function loadPlaylists(){
+  try{
+    const raw = await persistGet(PLAYLISTS_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    playlists = Array.isArray(parsed) ? parsed.filter(p => p && typeof p.id === 'string').slice(0, PLAYLISTS_MAX) : [];
+  }catch(e){ playlists = []; }
+}
+function persistPlaylists(){
+  playlistSaveChain = playlistSaveChain.then(async () => {
+    try{ await persistSet(PLAYLISTS_STORAGE_KEY, JSON.stringify(playlists)); }
+    catch(e){ console.error('Could not save playlists', e); }
+  });
+  return playlistSaveChain;
+}
+// Returns a playlist id if the text is a playlist link or id, otherwise null
+function parsePlaylistInput(raw){
+  const t = (raw || '').trim();
+  if(!t) return null;
+  if(/^(PL|UU|OLAK5uy_|FL)[\w-]{10,}$/.test(t)) return t;
+  if(/^RD[\w-]{8,}$/.test(t)) return t;
+  try{
+    const u = new URL(/^https?:\/\//i.test(t) ? t : 'https://' + t);
+    if(/(^|\.)youtube\.com$|(^|\.)youtu\.be$/i.test(u.hostname)){
+      const id = u.searchParams.get('list');
+      if(id) return id;
+    }
+  }catch(e){}
+  return null;
+}
+function bestThumb(sn){
+  const t = sn && sn.thumbnails;
+  if(!t) return '';
+  return (t.medium || t.high || t.default || t.standard || {}).url || '';
+}
+async function addPlaylistFromInput(id){
+  if(/^(RD|LL|WL)/.test(id)) throw new Error('That looks like an auto-generated mix or a private list (Liked / Watch later), which YouTube does not share. Try a playlist that someone made on purpose.');
+  if(playlists.some(p => p.id === id)){
+    playlistViewMode = 'list'; openPlaylistId = null; queueViewActive = false;
+    updateQueueToggle(); renderVideos();
+    setStatus('That playlist is already saved.', true);
+    return;
+  }
+  if(playlists.length >= PLAYLISTS_MAX) throw new Error(`You can save up to ${PLAYLISTS_MAX} playlists. Remove one first.`);
+  const data = await ytFetch('playlists', { part:'snippet,contentDetails', id });
+  const item = data.items && data.items[0];
+  if(!item) throw new Error('Could not find that playlist. It may be private or deleted.');
+  playlists.push({
+    id: item.id,
+    title: item.snippet.title || 'Untitled playlist',
+    channelName: item.snippet.channelTitle || '',
+    thumb: bestThumb(item.snippet),
+    count: (item.contentDetails && item.contentDetails.itemCount) || 0
+  });
+  await persistPlaylists();
+  playlistViewMode = 'list'; openPlaylistId = null; queueViewActive = false;
+  updateQueueToggle();
+  renderVideos();
+  setStatus(`Saved playlist "${item.snippet.title}".`);
+}
+async function fetchPlaylistVideos(pl){
+  if(playlistCache.has(pl.id)) return playlistCache.get(pl.id);
+  const out = [];
+  let pageToken = '';
+  for(let page = 0; page < 2; page++){
+    const params = { part:'snippet,contentDetails', playlistId: pl.id, maxResults: 50 };
+    if(pageToken) params.pageToken = pageToken;
+    const data = await ytFetch('playlistItems', params);
+    (data.items || []).forEach(it => {
+      const sn = it.snippet || {};
+      const vid = (it.contentDetails && it.contentDetails.videoId) || (sn.resourceId && sn.resourceId.videoId);
+      if(!vid || sn.title === 'Private video' || sn.title === 'Deleted video') return;
+      const thumb = bestThumb(sn);
+      if(!thumb) return;
+      const pub = (it.contentDetails && it.contentDetails.videoPublishedAt) || sn.publishedAt || '';
+      out.push({
+        id: vid, title: sn.title, url: 'https://www.youtube.com/watch?v=' + vid,
+        published: pub, publishedMs: pub ? Date.parse(pub) : 0, thumb,
+        channelId: sn.videoOwnerChannelId || '', channelName: sn.videoOwnerChannelTitle || pl.channelName || '',
+        channelGenre: ''
+      });
+    });
+    pageToken = data.nextPageToken;
+    if(!pageToken) break;
+  }
+  playlistCache.set(pl.id, out);
+  return out;
+}
+function updatePlaylistsToggle(){
+  const btn = document.getElementById('playlistsBtn');
+  if(!btn) return;
+  const inMode = !!playlistViewMode;
+  btn.innerHTML = inMode ? '<span class="qi qi-back"></span>Back' : `<span class="qi qi-list"></span>Playlists ${playlists.length}`;
+  btn.classList.toggle('has-items', playlists.length > 0 && !inMode);
+  btn.title = inMode ? (playlistViewMode === 'open' ? 'Back to your playlists' : 'Go back to your feed') : 'Open your saved playlists';
+  if(inMode){
+    const pl = playlists.find(p => p.id === openPlaylistId);
+    document.getElementById('feedTitle').textContent = (playlistViewMode === 'open' && pl) ? pl.title : 'Playlists';
+    document.getElementById('feedHeading').classList.remove('queue-mode');
+    videosCount.textContent = playlistViewMode === 'open' && pl ? (playlistCache.has(pl.id) ? playlistCache.get(pl.id).length : '') : playlists.length;
+    const q = document.getElementById('queueToggleBtn');
+    q.innerHTML = `<span class="qi qi-play"></span>Queue ${queue.length}/${QUEUE_MAX}`;
+    q.title = 'Open your watch-later queue';
+  }
+}
+let playlistRenderToken = 0;
+async function renderPlaylistsView(){
+  const token = ++playlistRenderToken;
+  grid.innerHTML = '';
+  updatePlaylistsToggle();
+  if(playlistViewMode === 'list'){
+    if(playlists.length === 0){
+      grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
+        <div class="big">No playlists yet</div>
+        <div>Paste a YouTube playlist link into the box above and press <strong>Add creator</strong>. Handy for collabs on channels you do not want to follow.</div>
+      </div>`;
+      return;
+    }
+    playlists.forEach(pl => {
+      const card = document.createElement('div');
+      card.className = 'pl-card';
+      card.tabIndex = 0;
+      const img = document.createElement('div');
+      img.className = 'pl-thumb';
+      if(pl.thumb) img.style.backgroundImage = `url("${pl.thumb}")`;
+      const body = document.createElement('div');
+      body.className = 'pl-body';
+      const t = document.createElement('div');
+      t.className = 'pl-title';
+      t.textContent = pl.title;
+      const m = document.createElement('div');
+      m.className = 'pl-meta';
+      m.textContent = [pl.channelName, pl.count ? `${pl.count} video${pl.count === 1 ? '' : 's'}` : ''].filter(Boolean).join(' · ');
+      body.appendChild(t); body.appendChild(m);
+      const rm = document.createElement('button');
+      rm.type = 'button';
+      rm.className = 'pl-remove';
+      rm.title = 'Remove this playlist';
+      rm.setAttribute('aria-label', 'Remove playlist ' + pl.title);
+      rm.textContent = '✕';
+      rm.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if(!window.confirm(`Remove the playlist "${pl.title}"?`)) return;
+        playlists = playlists.filter(p => p.id !== pl.id);
+        playlistCache.delete(pl.id);
+        persistPlaylists();
+        renderPlaylistsView();
+      });
+      const open = () => { playlistViewMode = 'open'; openPlaylistId = pl.id; renderPlaylistsView(); };
+      card.addEventListener('click', open);
+      card.addEventListener('keydown', (e) => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(); } });
+      card.appendChild(img); card.appendChild(body); card.appendChild(rm);
+      grid.appendChild(card);
+    });
+    return;
+  }
+  // open a single playlist
+  const pl = playlists.find(p => p.id === openPlaylistId);
+  if(!pl){ playlistViewMode = 'list'; renderPlaylistsView(); return; }
+  if(!playlistCache.has(pl.id)){
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1;"><div>Loading playlist…</div></div>';
+  }
+  try{
+    const vids = await fetchPlaylistVideos(pl);
+    if(token !== playlistRenderToken || playlistViewMode !== 'open') return;
+    grid.innerHTML = '';
+    updatePlaylistsToggle();
+    const bar = document.createElement('div');
+    bar.className = 'queue-bar';
+    const span = document.createElement('span');
+    span.textContent = 'In playlist order, up to 100 videos.';
+    const a = document.createElement('a');
+    a.href = 'https://www.youtube.com/playlist?list=' + encodeURIComponent(pl.id);
+    a.target = '_blank'; a.rel = 'noopener';
+    a.textContent = 'Open on YouTube';
+    a.className = 'pl-open-link';
+    bar.appendChild(span); bar.appendChild(a);
+    grid.appendChild(bar);
+    if(vids.length === 0){
+      const e = document.createElement('div');
+      e.className = 'empty'; e.style.gridColumn = '1/-1';
+      e.innerHTML = '<div class="big">Nothing to show</div><div>This playlist has no public videos.</div>';
+      grid.appendChild(e);
+      return;
+    }
+    vids.forEach(v => grid.appendChild(buildVideoCard(v, { fromQueue:false })));
+  }catch(err){
+    if(token !== playlistRenderToken) return;
+    grid.innerHTML = '';
+    setStatus(err.message || 'Could not load that playlist.', true);
+    const e = document.createElement('div');
+    e.className = 'empty'; e.style.gridColumn = '1/-1';
+    e.innerHTML = '<div class="big">Could not load this playlist</div><div>Check the status message above, then try again.</div>';
+    grid.appendChild(e);
+  }
+}
+document.getElementById('playlistsBtn').addEventListener('click', () => {
+  if(playlistViewMode === 'open'){ playlistViewMode = 'list'; }
+  else if(playlistViewMode === 'list'){ playlistViewMode = null; openPlaylistId = null; }
+  else { queueViewActive = false; playlistViewMode = 'list'; }
+  updateQueueToggle();
+  renderVideos();
+});
+
 function updateQueueToggle(){
   const btn = document.getElementById('queueToggleBtn');
   if(!btn) return;
@@ -493,6 +706,7 @@ function updateQueueToggle(){
   document.getElementById('feedTitle').textContent = queueViewActive ? 'Queue' : 'Videos';
   document.getElementById('feedHeading').classList.toggle('queue-mode', queueViewActive);
   if(queueViewActive) videosCount.textContent = queue.length;
+  updatePlaylistsToggle();
 }
 
 function renderQueueView(){
@@ -523,7 +737,8 @@ function renderQueueView(){
 }
 
 document.getElementById('queueToggleBtn').addEventListener('click', () => {
-  queueViewActive = !queueViewActive;
+  if(playlistViewMode){ playlistViewMode = null; openPlaylistId = null; queueViewActive = true; }
+  else queueViewActive = !queueViewActive;
   updateQueueToggle();
   renderVideos();
 });
@@ -1097,11 +1312,11 @@ async function removeChannel(id){
 
 // Menu > "Clear all creators": wipes the list so you can start from scratch (API key and theme are kept)
 async function clearEverything(){
-  if(channels.length === 0 && queue.length === 0 && shortsQueue.length === 0){
+  if(channels.length === 0 && queue.length === 0 && shortsQueue.length === 0 && playlists.length === 0){
     setStatus('There is nothing to clear yet.');
     return;
   }
-  const ok = window.confirm('Clear all your creators and both queues and start from scratch?\n\nThis cannot be undone. Use Export first if you want a backup. Your API key and theme are kept.');
+  const ok = window.confirm('Clear all your creators and both queues and playlists and start from scratch?\n\nThis cannot be undone. Use Export first if you want a backup. Your API key and theme are kept.');
   if(!ok) return;
   channels = [];
   videos = [];
@@ -1114,6 +1329,11 @@ async function clearEverything(){
   removedChannelsStack.length = 0;
   queueViewActive = false;
   shortsQueueActive = false;
+  playlists = [];
+  playlistCache.clear();
+  playlistViewMode = null;
+  openPlaylistId = null;
+  persistPlaylists();
   updateUndoButton();
   updateSoloBadge();
   persistWatchQueue();
@@ -1389,7 +1609,7 @@ function timeAgo(iso){
 }
 
 function renderSkeletons(n=8){
-  if(queueViewActive) return;
+  if(queueViewActive || playlistViewMode) return;
   grid.innerHTML = '';
   for(let i=0;i<n;i++){
     const s = document.createElement('div');
@@ -1418,6 +1638,7 @@ function renderChannelCard(ch){
 }
 
 function renderVideos(){
+  if(playlistViewMode){ renderPlaylistsView(); return; }
   if(queueViewActive){ renderQueueView(); return; }
   grid.innerHTML = '';
   const list = videos.filter(v => matchesSelection(v)).slice(0, 60);
@@ -1552,6 +1773,21 @@ async function loadAllVideos(){
 addForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const raw = channelInput.value;
+  const plId = parsePlaylistInput(raw);
+  if(plId){
+    const submitBtn0 = addForm.querySelector('button[type="submit"]');
+    setStatus('Looking up playlist…');
+    channelInput.disabled = true; submitBtn0.disabled = true;
+    try{
+      await addPlaylistFromInput(plId);
+      channelInput.value = '';
+    }catch(err){
+      setStatus(err.message || 'Could not add that playlist.', true);
+    }finally{
+      channelInput.disabled = false; submitBtn0.disabled = false;
+    }
+    return;
+  }
   const parsed = normalizeInput(raw);
   if(!parsed){ setStatus('Enter a channel URL, @handle, or ID.', true); return; }
   if(channels.some(c => c.id === parsed.value)){
@@ -1590,7 +1826,11 @@ addForm.addEventListener('submit', async (e) => {
   }
 });
 
-refreshBtn.addEventListener('click', loadAllVideos);
+refreshBtn.addEventListener('click', () => {
+  playlistCache.clear();
+  if(playlistViewMode === 'open') renderPlaylistsView();
+  loadAllVideos();
+});
 
 function showInfoSlide(n){
   document.querySelectorAll('.info-slide').forEach(s => s.classList.toggle('active', Number(s.dataset.slide) === n));
@@ -1725,7 +1965,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 exportBtn.addEventListener('click', () => {
-  if(channels.length === 0){
+  if(channels.length === 0 && playlists.length === 0){
     setStatus('No creators to export yet — add some first.', true);
     return;
   }
@@ -1733,7 +1973,8 @@ exportBtn.addEventListener('click', () => {
     format: 'anti-algo-creators',
     version: 1,
     exportedAt: new Date().toISOString(),
-    channels: channels.map(ch => ({ id: ch.id, name: ch.name, genre: ch.genre || 'Uncategorised' }))
+    channels: channels.map(ch => ({ id: ch.id, name: ch.name, genre: ch.genre || 'Uncategorised' })),
+    playlists: playlists.map(p => ({ id: p.id, title: p.title, channelName: p.channelName, thumb: p.thumb, count: p.count }))
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -1763,8 +2004,9 @@ importFileInput.addEventListener('change', async () => {
     return;
   }
 
-  const incoming = Array.isArray(parsed) ? parsed : parsed.channels;
-  if(!Array.isArray(incoming)){
+  const incoming = Array.isArray(parsed) ? parsed : (parsed.channels || []);
+  const incomingPl = (!Array.isArray(parsed) && Array.isArray(parsed.playlists)) ? parsed.playlists : [];
+  if(!Array.isArray(incoming) || (incoming.length === 0 && incomingPl.length === 0 && !Array.isArray(parsed.channels))){
     setStatus('That file doesn\'t look like a creators export.', true);
     return;
   }
@@ -1777,7 +2019,15 @@ importFileInput.addEventListener('change', async () => {
     added++;
   });
 
-  if(added === 0 && skipped === 0 && invalid > 0){
+  let addedPl = 0;
+  incomingPl.forEach(p => {
+    if(!p || typeof p.id !== 'string' || playlists.some(x => x.id === p.id) || playlists.length >= PLAYLISTS_MAX) return;
+    playlists.push({ id:p.id, title:String(p.title || 'Untitled playlist'), channelName:String(p.channelName || ''), thumb:String(p.thumb || ''), count:Number(p.count) || 0 });
+    addedPl++;
+  });
+  if(addedPl) await persistPlaylists();
+  updatePlaylistsToggle();
+  if(added === 0 && skipped === 0 && addedPl === 0 && invalid > 0){
     setStatus('Nothing usable found in that file.', true);
     return;
   }
@@ -1789,6 +2039,7 @@ importFileInput.addEventListener('change', async () => {
   await loadAllVideos();
 
   const parts = [`Imported ${added} creator${added !== 1 ? 's' : ''}`];
+  if(addedPl > 0) parts.push(`${addedPl} playlist${addedPl !== 1 ? 's' : ''}`);
   if(skipped > 0) parts.push(`${skipped} already in your list`);
   if(invalid > 0) parts.push(`${invalid} entries skipped (invalid)`);
   setStatus(parts.join(' · '));
@@ -2050,6 +2301,7 @@ infoTourBtn.addEventListener('click', () => {
   await loadQueue();
   await loadShortsQueue();
   await loadVideoPositions();
+  await loadPlaylists();
   updateQueueToggle();
   updateShortsQueueToggle();
   renderChips();
