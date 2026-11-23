@@ -918,3 +918,17 @@ a.brand:hover h1{ color: var(--amber); }
   #playlistsBtn{ margin-left:0; }
   .pl-thumb{ flex-basis:96px; height:56px; }
 }
+
+/* "API key accepted" toast: floats just above the key bar, then fades */
+#keyToast{
+  position:fixed; z-index:60; transform:translate(-50%,-100%); pointer-events:none; opacity:0;
+  background: var(--panel-2); color: var(--text); border:1px solid var(--line); border-radius:999px;
+  padding:7px 16px; font-size:13px; font-weight:600; white-space:nowrap; box-shadow:0 6px 20px rgba(0,0,0,.35);
+}
+#keyToast.show{ animation: keyToastFade 2.6s ease forwards; }
+@keyframes keyToastFade{
+  0%{ opacity:0; transform:translate(-50%,-90%); }
+  12%{ opacity:1; transform:translate(-50%,-100%); }
+  70%{ opacity:1; }
+  100%{ opacity:0; transform:translate(-50%,-100%); }
+}

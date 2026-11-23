@@ -16,7 +16,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://anti-algo.com/preview.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css?v=39">
+<link rel="stylesheet" href="style.css?v=40">
 <script src="theme.js?v=9"></script>
 </head>
 <body>
@@ -140,9 +140,9 @@
     <div class="help-slide active" data-slide="0">
       <div class="modal-title">Get your key <span class="help-sub">(1 of 4)</span></div>
       <ol class="modal-steps">
-        <li>Press <strong>Set up with Google</strong> below and sign in with any Google account.</li>
+        <li>Press <strong>Set up with Google</strong> below and sign in with any Google account. If you land on the Google Cloud dashboard instead of an <strong>Enable</strong> page, open the <a class="help-link" href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener"><strong>YouTube Data API v3</strong> page</a> directly.</li>
         <li>Google asks you to choose a project. Pick <strong>Create a new project</strong>. Any name works.</li>
-        <li>Press <strong>Enable</strong>. This switches on YouTube Data API v3 for you.</li>
+        <li>Press <strong>Enable</strong>. This switches on YouTube Data API v3 for you. It can take a minute or two to show up in the Credentials list, so if it is missing, wait a moment and refresh the page.</li>
       </ol>
     </div>
     <div class="help-slide" data-slide="1">
@@ -2060,13 +2060,45 @@ apiKeyToggleBtn.addEventListener('click', () => {
   apiKeyToggleBtn.innerHTML = hidden ? EYE_OFF_SVG : EYE_SVG;
 });
 
+function showKeyToast(text){
+  let t = document.getElementById('keyToast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'keyToast';
+    t.setAttribute('role', 'status');
+    document.body.appendChild(t);
+  }
+  const bar = document.getElementById('apiKeyBar').getBoundingClientRect();
+  t.textContent = text;
+  t.style.left = (bar.left + bar.width / 2) + 'px';
+  t.style.top = Math.max(12, bar.top - 12) + 'px';
+  t.classList.remove('show');
+  void t.offsetWidth;            // restart the animation if pressed twice
+  t.classList.add('show');
+}
 apiKeySaveBtn.addEventListener('click', async () => {
   apiKey = apiKeyInput.value.trim();
   apiKeySaveBtn.disabled = true;
   try{
     await persistSet(APIKEY_STORAGE_KEY, apiKey);
-    setStatus(apiKey ? 'API key saved.' : 'API key cleared.');
-    if(apiKey && channels.length > 0) await loadAllVideos();
+    if(!apiKey){ setStatus('API key cleared.'); return; }
+    // a tiny test request (1 quota unit) so "accepted" is true
+    let ok = false, rejected = false;
+    try{
+      await ytFetch('videos', { part:'id', id:'dQw4w9WgXcQ' });
+      ok = true;
+    }catch(err){
+      rejected = err.reason === 'keyInvalid' || /API key not valid/i.test(err.message || '');
+    }
+    if(ok){
+      setStatus('API key saved.');
+      showKeyToast('API key accepted');
+    } else if(rejected){
+      setStatus('Google did not accept that key. Check you copied all of it, then try again.', true);
+    } else {
+      setStatus('API key saved. We could not check it just now, so it will be tested when your feed loads.');
+    }
+    if(channels.length > 0) await loadAllVideos();
   }catch(e){
     setStatus('Could not save the API key.', true);
   }finally{
